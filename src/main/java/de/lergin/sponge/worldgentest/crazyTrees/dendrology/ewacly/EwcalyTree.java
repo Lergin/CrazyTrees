@@ -11,7 +11,7 @@ import org.spongepowered.api.world.World;
 import java.util.Random;
 
 /**
- * Generator Code: edited version of EwcalyTree by MinecraftModArchive/Dendrology
+ * Generator Code: edited version of NormalEwcalyTree by MinecraftModArchive/Dendrology
  */
 public class EwcalyTree extends DendrologyTree {
     private Random random;

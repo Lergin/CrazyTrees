@@ -26,7 +26,7 @@ public abstract class DendrologyTree extends CrazyTree {
 
     }
 
-    boolean hasRoomToGrow(World world, int x, int y, int z, int height) {
+    public boolean hasRoomToGrow(World world, int x, int y, int z, int height) {
         for (int y1 = y; y1 <= y + 1 + height; ++y1)
             if (!this.getReplaceBlocks().contains(world.getBlock(x, y1, z))) return false;
 
@@ -44,7 +44,7 @@ public abstract class DendrologyTree extends CrazyTree {
             loc.setBlock(block);
     }
 
-    boolean canBeReplacedByLog(Location<World> loc) {
+    public boolean canBeReplacedByLog(Location<World> loc) {
         return this.getReplaceBlocks().contains(loc.getBlock()) || loc.getBlock() == this.getLeaveBlock();
     }
 

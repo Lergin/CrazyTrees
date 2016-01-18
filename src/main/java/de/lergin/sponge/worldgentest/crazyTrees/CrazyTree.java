@@ -16,16 +16,44 @@ public abstract class CrazyTree implements PopulatorObject {
     ArrayList<BlockState> groundBlocks;
     int treeHeightMax;
     int treeHeightMin;
-    TreeGenerator treeGenerator;
 
+    public int getTreeHeightMin() {
+        return treeHeightMin;
+    }
+
+    public BlockState getWoodBlock() {
+        return woodBlock;
+    }
+
+    public BlockState getLeaveBlock() {
+        return leaveBlock;
+    }
+
+    public boolean isPlaceBlockUnderTree() {
+        return placeBlockUnderTree;
+    }
+
+    public BlockState getUnderTreeBlock() {
+        return underTreeBlock;
+    }
+
+    public ArrayList<BlockState> getReplaceBlocks() {
+        return replaceBlocks;
+    }
+
+    public ArrayList<BlockState> getGroundBlocks() {
+        return groundBlocks;
+    }
+
+    public int getTreeHeightMax() {
+        return treeHeightMax;
+    }
 
     public CrazyTree(){
         super();
     }
 
-    public static Builder builder(){
-        return new Builder();
-    }
+    public abstract Builder builder();
 
     //TODO: change to something better ;)
     @Override
@@ -38,18 +66,7 @@ public abstract class CrazyTree implements PopulatorObject {
         return "crazyTree";
     }
 
-   /* @Override
-    public boolean canPlaceAt(World world, int i, int i1, int i2) {
-        return treeGenerator.canPlaceAt(world, i, i1, i2, treeHeightMax, treeHeightMin, replaceBlocks, groundBlocks);
-    }
-
-    @Override
-    public void placeObject(World world, Random random, int i, int i1, int i2) {
-        treeGenerator.placeObject(world, random, i, i1, i2, woodBlock, leaveBlock, underTreeBlock, treeHeightMax,
-                treeHeightMin, placeBlockUnderTree, replaceBlocks);
-    }*/
-
-    public static class Builder {
+    public static abstract class Builder {
         private BlockState woodBlock = BlockState.builder().blockType(BlockTypes.LOG).build();
         private BlockState leaveBlock = BlockState.builder().blockType(BlockTypes.LEAVES).build();
         private boolean placeBlockUnderTree = true;
@@ -58,7 +75,6 @@ public abstract class CrazyTree implements PopulatorObject {
         private ArrayList<BlockState> groundBlocks = new ArrayList<>();
         private int treeHeightMax = 7;
         private int treeHeightMin = 4;
-        private TreeGenerator treeGenerator = TreeGenerator.OAK;
 
 
         public Builder woodBlock(BlockState woodBlock) {
@@ -154,14 +170,10 @@ public abstract class CrazyTree implements PopulatorObject {
             return this;
         }
 
-        public Builder treeType(TreeGenerator treeGenerator) {
-            this.treeGenerator = treeGenerator;
-
-            return this;
-        }
+        public abstract CrazyTree getTreeType();
 
         public CrazyTree build() {
-            CrazyTree crazyTree = new EwcalyTree();
+            CrazyTree crazyTree = getTreeType();
 
             crazyTree.woodBlock = this.woodBlock;
             crazyTree.leaveBlock = this.leaveBlock;
@@ -169,7 +181,6 @@ public abstract class CrazyTree implements PopulatorObject {
             crazyTree.treeHeightMax = this.treeHeightMax;
             crazyTree.treeHeightMin = this.treeHeightMin;
             crazyTree.placeBlockUnderTree = this.placeBlockUnderTree;
-            crazyTree.treeGenerator = this.treeGenerator;
 
             if(this.groundBlocks.size() == 0){
                 this.groundBlocks.add(BlockState.builder().blockType(BlockTypes.DIRT).build());

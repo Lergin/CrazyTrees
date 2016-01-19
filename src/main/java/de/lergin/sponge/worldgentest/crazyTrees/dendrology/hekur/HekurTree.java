@@ -1,11 +1,9 @@
 package de.lergin.sponge.worldgentest.crazyTrees.dendrology.hekur;
 
 import com.google.common.collect.ImmutableList;
-import com.google.inject.Inject;
 import de.lergin.sponge.worldgentest.crazyTrees.CrazyTree;
 import de.lergin.sponge.worldgentest.crazyTrees.dendrology.DendrologyTree;
 import org.apache.commons.lang3.tuple.ImmutablePair;
-import org.slf4j.Logger;
 import org.spongepowered.api.util.Direction;
 import org.spongepowered.api.world.World;
 

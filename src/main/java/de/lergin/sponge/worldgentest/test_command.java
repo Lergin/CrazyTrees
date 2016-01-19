@@ -32,8 +32,7 @@ public class test_command implements CommandExecutor {
         int y  = player.getLocation().getBlockY();
         int z  = player.getLocation().getBlockZ();
 
-        CrazyTree crazyTree = CrazyTreeBuilder.EWACALY.leaveBlock(BlockTypes.GLOWSTONE)
-                .woodBlock(BlockTypes.QUARTZ_BLOCK).replaceBlock(BlockTypes.WATER).replaceBlock(BlockTypes.AIR).placeBlockUnderTree(false).build();
+        CrazyTree crazyTree = CrazyTreeBuilder.NUCIS.placeBlockUnderTree(false).build();
 
 
         crazyTree.placeObject(player.getWorld(), new Random(), x+3, y, z);

@@ -25,9 +25,9 @@ public class EwcalyTree extends DendrologyTree {
     @Override
     public void placeObject(World world, Random random, int x, int y, int z) {
         this.random = random;
-        int height = random.nextInt(this.getTreeHeightMax() - this.getTreeHeightMin() + 1) + this.getTreeHeightMax();
+        int height = random.nextInt(this.getTreeHeightMax() - this.getTreeHeightMin() + 1) + this.getTreeHeightMin();
 
-        while (!canPlaceAt(world, x, y, z, height)){
+        while (!canPlaceAt(world, x, y, z, height) && height > 0){
             height--;
         }
 

@@ -15,7 +15,7 @@ public abstract class DendrologyTree extends CrazyTree {
 
     @Override
     public boolean canPlaceAt(World world, int x, int y, int z) {
-        return canPlaceAt(world, x, y, z, this.getTreeHeightMin()) && !this.getGroundBlocks().contains(world.getBlock(x, y - 1, z));
+        return canPlaceAt(world, x, y, z, this.getTreeHeightMin()) && this.getGroundBlocks().contains(world.getBlock(x, y - 1, z));
     }
 
     public boolean canPlaceAt(World world, int x, int y, int z, int height) {

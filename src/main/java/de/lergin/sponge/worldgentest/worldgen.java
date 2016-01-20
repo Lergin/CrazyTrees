@@ -5,7 +5,10 @@ package de.lergin.sponge.worldgentest;
  */
 import de.lergin.sponge.worldgentest.crazyTrees.CrazyTree;
 import de.lergin.sponge.worldgentest.crazyTrees.CrazyTreeBuilder;
+import de.lergin.sponge.worldgentest.crazyTrees.CrazyTreeType;
+import org.spongepowered.api.block.BlockTypes;
 import org.spongepowered.api.data.DataContainer;
+import org.spongepowered.api.util.weighted.VariableAmount;
 import org.spongepowered.api.world.WorldCreationSettings;
 import org.spongepowered.api.world.gen.*;
 import org.spongepowered.api.world.gen.populator.*;
@@ -54,12 +57,22 @@ class worldgen implements WorldGeneratorModifier {
         }
 */
 
-        CrazyTree crazyTree = CrazyTreeBuilder.EWACALY_LARGE.treeHeight(8,4).build();
+        CrazyTree crazyTree = CrazyTreeBuilder.EWACALY_LARGE.build();
 
       // CrazyTree crazyTree = CrazyTree.builder().leaveBlock(BlockTypes.DIAMOND_BLOCK)
       //          .woodBlock(BlockTypes.OBSIDIAN).build();
 
-        Forest forest = Forest.builder().perChunk(3).type(crazyTree, 1).build();
+        Forest forest = Forest.builder().perChunk(VariableAmount.fixed(0.5))
+                .type(CrazyTreeType.EWACALY.getBuilder().leaveBlock(BlockTypes.HAY_BLOCK).build(), 0.1)
+          //      .type(CrazyTreeType.KULIST.getBuilder().leaveBlock(BlockTypes.SPONGE).woodBlock(BlockTypes.LOG2).build(), 0.1)
+          //      .type(CrazyTreeType.KULIST.getBuilder().build(), 0.1)
+          //      .type(CrazyTreeType.LATA.getBuilder().build(), 0.1)
+          //      .type(CrazyTreeType.CEDRUM.getBuilder().build(), 0.1)
+          //      .type(CrazyTreeType.SALYX.getBuilder().leaveBlock(BlockTypes.SPONGE).woodBlock(BlockTypes.LOG2).build(), 0.1)
+          //      .type(CrazyTreeType.SALYX.getBuilder().build(), 0.1)
+          //      .type(CrazyTreeType.TUOPA.getBuilder().build(), 0.1)
+          //      .type(CrazyTreeType.NUCIS.getBuilder().build(), 0.1)
+                .build();
 
         worldGenerator.getPopulators().add(forest);
     }

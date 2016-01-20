@@ -9,6 +9,7 @@ import com.flowpowered.math.vector.Vector3d;
 import com.google.inject.Inject;
 import de.lergin.sponge.worldgentest.crazyTrees.CrazyTree;
 import de.lergin.sponge.worldgentest.crazyTrees.CrazyTreeBuilder;
+import de.lergin.sponge.worldgentest.crazyTrees.CrazyTreeType;
 import de.lergin.sponge.worldgentest.crazyTrees.dendrology.hekur.HekurTree;
 import de.lergin.sponge.worldgentest.crazyTrees.vanilla.oak.OakTree;
 import org.slf4j.Logger;
@@ -44,6 +45,7 @@ import org.spongepowered.api.event.game.state.GameInitializationEvent;
 import org.spongepowered.api.event.game.state.GamePreInitializationEvent;
 import org.spongepowered.api.event.item.inventory.DropItemEvent;
 import org.spongepowered.api.event.world.chunk.PopulateChunkEvent;
+import org.spongepowered.api.item.ItemType;
 import org.spongepowered.api.item.ItemTypes;
 import org.spongepowered.api.item.inventory.ItemStack;
 import org.spongepowered.api.plugin.Plugin;
@@ -107,7 +109,7 @@ public class worldgentest {
     @Listener
     public void onBlockBreak(ChangeBlockEvent.Break event) {
 
-        BlockSnapshot blockSnapshot = event.getTransactions().iterator().next().getOriginal();
+       /* BlockSnapshot blockSnapshot = event.getTransactions().iterator().next().getOriginal();
 
         if (blockSnapshot.supports(Keys.TREE_TYPE)) {
             ItemStack rose = ItemTypes.DOUBLE_PLANT.getTemplate().createStack();
@@ -133,11 +135,14 @@ public class worldgentest {
                 }
             }
         }
+*/
 
     }
 
     @Inject
     Logger logger;
+
+    CrazyTreeType crazyTreeBuilder = CrazyTreeType.HEKUR;
 
     @Listener
     public void onItemDrop(InteractBlockEvent.Secondary event) {
@@ -155,7 +160,15 @@ public class worldgentest {
                 if(itemStackOptional.isPresent()){
                     ItemStack itemStack = itemStackOptional.get();
 
-                    Optional<BlockType> optionalItemStackBlockType = itemStack.getItem().getBlock();
+                    ItemType itemType = itemStack.getItem();
+
+
+                    if(itemType == ItemTypes.NETHER_STAR){
+                        crazyTreeBuilder = CrazyTreeType.random();
+                    }
+
+
+                    Optional<BlockType> optionalItemStackBlockType = itemType.getBlock();
 
                     if(optionalItemStackBlockType.isPresent()){
                         itemStack.setQuantity(itemStack.getQuantity() - 1);
@@ -187,13 +200,15 @@ public class worldgentest {
                         blockSnapshot.getLocation().get().setBlockType(BlockTypes.AIR);
 
                         //create a tree
-                        CrazyTree hekurTree = CrazyTreeBuilder.OAK.woodBlock(blockState).leaveBlock(BlockTypes.LEAVES).replaceBlock(BlockTypes.AIR).treeHeight(14,4).build();
+                        CrazyTree hekurTree = crazyTreeBuilder.getBuilder().woodBlock(blockState).leaveBlock(BlockTypes.LEAVES).replaceBlock(BlockTypes.AIR).treeHeight(14,4).build();
 
                         //generate it at the position of the sapling
                         hekurTree.placeObject(player.getWorld(), new Random(), blockSnapshot.getLocation().get());
 
                         //reduce itemAmount in inventory
                         player.setItemInHand(itemStack);
+
+                        event.setCancelled(true);
                     }
                 }
             }

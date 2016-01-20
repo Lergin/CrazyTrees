@@ -3,9 +3,12 @@ package de.lergin.sponge.worldgentest.crazyTrees;
 import org.spongepowered.api.block.BlockState;
 import org.spongepowered.api.block.BlockType;
 import org.spongepowered.api.block.BlockTypes;
+import org.spongepowered.api.world.Location;
+import org.spongepowered.api.world.World;
 import org.spongepowered.api.world.gen.PopulatorObject;
 
 import java.util.ArrayList;
+import java.util.Random;
 
 public abstract class CrazyTree implements PopulatorObject {
     BlockState woodBlock;
@@ -54,6 +57,10 @@ public abstract class CrazyTree implements PopulatorObject {
     }
 
     public abstract Builder builder();
+
+    public void placeObject(World world, Random random, Location location){
+        this.placeObject(world, random, location.getBlockX(), location.getBlockY(), location.getBlockZ());
+    }
 
     //TODO: change to something better ;)
     @Override

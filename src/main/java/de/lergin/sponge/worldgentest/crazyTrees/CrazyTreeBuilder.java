@@ -9,7 +9,7 @@ import de.lergin.sponge.worldgentest.crazyTrees.dendrology.hekur.HekurTree;
 import de.lergin.sponge.worldgentest.crazyTrees.dendrology.hekur.HekurTreeLarge;
 import de.lergin.sponge.worldgentest.crazyTrees.dendrology.kulist.KulistTree;
 import de.lergin.sponge.worldgentest.crazyTrees.dendrology.kulist.KulistTreeLarge;
-import de.lergin.sponge.worldgentest.crazyTrees.oak.OakTree;
+import de.lergin.sponge.worldgentest.crazyTrees.vanilla.oak.OakTree;
 
 /**
  * Created by Malte on 18.01.2016.
@@ -33,5 +33,5 @@ public class CrazyTreeBuilder {
 
 
     //like Vanilla
-    public static CrazyTree.Builder OAK             = new OakTree.Builder();
+    public static CrazyTree.Builder OAK             = new OakTree.Builder().treeHeight(14,4);
 }

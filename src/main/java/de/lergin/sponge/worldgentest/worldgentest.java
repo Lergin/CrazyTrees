@@ -5,7 +5,12 @@ import static org.spongepowered.api.command.args.GenericArguments.playerOrSource
 import static org.spongepowered.api.command.args.GenericArguments.seq;
 import static org.spongepowered.api.command.args.GenericArguments.world;
 
+import com.flowpowered.math.vector.Vector3d;
 import com.google.inject.Inject;
+import de.lergin.sponge.worldgentest.crazyTrees.CrazyTree;
+import de.lergin.sponge.worldgentest.crazyTrees.CrazyTreeBuilder;
+import de.lergin.sponge.worldgentest.crazyTrees.dendrology.hekur.HekurTree;
+import de.lergin.sponge.worldgentest.crazyTrees.vanilla.oak.OakTree;
 import org.slf4j.Logger;
 import org.spongepowered.api.CatalogType;
 import org.spongepowered.api.CatalogTypes;
@@ -21,12 +26,18 @@ import org.spongepowered.api.data.Transaction;
 import org.spongepowered.api.data.key.Keys;
 import org.spongepowered.api.data.manipulator.mutable.block.PoweredData;
 import org.spongepowered.api.data.type.*;
+import org.spongepowered.api.data.value.immutable.ImmutableValue;
+import org.spongepowered.api.effect.particle.BlockParticle;
+import org.spongepowered.api.effect.particle.ParticleEffect;
+import org.spongepowered.api.effect.particle.ParticleTypes;
 import org.spongepowered.api.entity.Entity;
 import org.spongepowered.api.entity.EntityTypes;
 import org.spongepowered.api.entity.Item;
 import org.spongepowered.api.entity.living.player.Player;
 import org.spongepowered.api.event.Listener;
 import org.spongepowered.api.event.block.ChangeBlockEvent;
+import org.spongepowered.api.event.block.GrowBlockEvent;
+import org.spongepowered.api.event.block.InteractBlockEvent;
 import org.spongepowered.api.event.cause.Cause;
 import org.spongepowered.api.event.game.state.GameAboutToStartServerEvent;
 import org.spongepowered.api.event.game.state.GameInitializationEvent;
@@ -42,7 +53,9 @@ import org.spongepowered.api.world.Location;
 import org.spongepowered.api.world.World;
 import org.spongepowered.api.world.storage.WorldProperties;
 
+import java.util.Iterator;
 import java.util.Optional;
+import java.util.Random;
 
 /**
  * Created by Malte on 02.01.2016.
@@ -127,10 +140,63 @@ public class worldgentest {
     Logger logger;
 
     @Listener
-    public void onItemDrop(DropItemEvent.Destruct event) {
+    public void onItemDrop(InteractBlockEvent.Secondary event) {
 
-        
+        BlockSnapshot blockSnapshot = event.getTargetBlock();
 
-        logger.info(event.getCause().toString());
+        if(blockSnapshot.getState().getType() == BlockTypes.SAPLING){
+            Optional<Player> playerOptional = event.getCause().first(Player.class);
+
+            if(playerOptional.isPresent()){
+                Player player = playerOptional.get();
+
+                Optional<ItemStack> itemStackOptional = player.getItemInHand();
+
+                if(itemStackOptional.isPresent()){
+                    ItemStack itemStack = itemStackOptional.get();
+
+                    Optional<BlockType> optionalItemStackBlockType = itemStack.getItem().getBlock();
+
+                    if(optionalItemStackBlockType.isPresent()){
+                        itemStack.setQuantity(itemStack.getQuantity() - 1);
+
+                        ParticleEffect particleEffect = ParticleEffect.builder().type(ParticleTypes.SMOKE_NORMAL).count(1).motion(Vector3d.ZERO).build();
+
+                        player.spawnParticles(particleEffect, blockSnapshot.getLocation().get().getPosition().add(0.5,0.5,0.5));
+
+
+
+                        BlockState blockState = optionalItemStackBlockType.get().getDefaultState();
+
+                        /*
+                        todo: uncomment when implemented (itemStack.getValues())
+
+                        Iterator<ImmutableValue<?>> itemStackDataValues = itemStack.getValues().iterator();
+
+                        while (itemStackDataValues.hasNext()){
+                            ImmutableValue<?> immutableValue = itemStackDataValues.next();
+
+                            if(blockState.supports(immutableValue)){
+                                blockState.with(immutableValue);
+                            }
+                        }
+                        */
+
+
+                        //destroy sapling
+                        blockSnapshot.getLocation().get().setBlockType(BlockTypes.AIR);
+
+                        //create a tree
+                        CrazyTree hekurTree = CrazyTreeBuilder.OAK.woodBlock(blockState).leaveBlock(BlockTypes.LEAVES).replaceBlock(BlockTypes.AIR).treeHeight(14,4).build();
+
+                        //generate it at the position of the sapling
+                        hekurTree.placeObject(player.getWorld(), new Random(), blockSnapshot.getLocation().get());
+
+                        //reduce itemAmount in inventory
+                        player.setItemInHand(itemStack);
+                    }
+                }
+            }
+        }
     }
 }

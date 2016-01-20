@@ -11,7 +11,6 @@ import org.spongepowered.api.command.CommandSource;
 import org.spongepowered.api.command.args.CommandContext;
 import org.spongepowered.api.command.spec.CommandExecutor;
 import org.spongepowered.api.entity.living.player.Player;
-import org.spongepowered.api.world.Chunk;
 
 import java.util.Random;
 
@@ -32,7 +31,7 @@ public class test_command implements CommandExecutor {
         int y  = player.getLocation().getBlockY();
         int z  = player.getLocation().getBlockZ();
 
-        CrazyTree crazyTree = CrazyTreeBuilder.NUCIS.placeBlockUnderTree(false).build();
+        CrazyTree crazyTree = CrazyTreeBuilder.OAK.leaveBlock(BlockTypes.SPONGE).woodBlock(BlockTypes.OBSIDIAN).placeBlockUnderTree(false).build();
 
 
         crazyTree.placeObject(player.getWorld(), new Random(), x+3, y, z);

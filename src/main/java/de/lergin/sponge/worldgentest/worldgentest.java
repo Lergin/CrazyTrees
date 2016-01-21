@@ -238,15 +238,16 @@ public class worldgentest {
 
         @Override
         public CommandResult execute(CommandSource src, CommandContext args) throws CommandException {
+
             Optional<Player> target = args.getOne("player");
             Optional<CrazyTreeType> integer = args.getOne("amount");
             if (target.isPresent()) {
                 Player player = target.get();
-                player.offer(new SaplingData(integer.get(), BlockTypes.LOG.getDefaultState(), BlockTypes.LEAVES.getDefaultState()));
+                player.offer(new SaplingData(BlockTypes.LOG.getDefaultState(), BlockTypes.LEAVES.getDefaultState()));
             } else {
                 if (src instanceof Player && integer.isPresent()) {
                     Player player = (Player) src;
-                    player.offer(new SaplingData(integer.get(), BlockTypes.LOG.getDefaultState(), BlockTypes.LEAVES.getDefaultState()));
+                    player.offer(new SaplingData( BlockTypes.LOG.getDefaultState(), BlockTypes.LEAVES.getDefaultState()));
                 }
             }
             return CommandResult.success();

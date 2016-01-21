@@ -1,7 +1,6 @@
 package de.lergin.sponge.worldgentest.data.saplingData;
 
 import com.google.common.collect.ComparisonChain;
-import de.lergin.sponge.worldgentest.crazyTrees.CrazyTreeType;
 import org.spongepowered.api.Sponge;
 import org.spongepowered.api.block.BlockState;
 import org.spongepowered.api.block.BlockTypes;
@@ -16,26 +15,19 @@ import java.util.Optional;
 
 public class ImmutableSaplingData extends AbstractImmutableData<ImmutableSaplingData, SaplingData> {
 
-  //  private final CrazyTreeType treeType;
     private final BlockState log;
     private final BlockState leave;
     private final BlockStateComparator blockStateComparator = new BlockStateComparator();
 
     public ImmutableSaplingData() {
-        this(/*CrazyTreeType.OAK,*/ BlockTypes.LOG.getDefaultState(), BlockTypes.LEAVES.getDefaultState());
+        this(BlockTypes.LOG.getDefaultState(), BlockTypes.LEAVES.getDefaultState());
     }
 
-    public ImmutableSaplingData(/*CrazyTreeType treeType,*/ BlockState log, BlockState leave) {
-        //this.treeType = treeType;
+    public ImmutableSaplingData(BlockState log, BlockState leave) {
         this.log = log;
         this.leave = leave;
     }
 
-
-  /*  public ImmutableValue<CrazyTreeType> crazyTreeType() {
-        return Sponge.getRegistry().getValueFactory().createValue(SaplingKeys.CRAZY_TREE_TYPE, CrazyTreeType.OAK, this.treeType).asImmutable();
-    }
-*/
     public ImmutableValue<BlockState> log() {
         return Sponge.getRegistry().getValueFactory().createValue(SaplingKeys.CRAZY_TREE_LOG, BlockTypes.LOG.getDefaultState(), this.log).asImmutable();
     }
@@ -44,13 +36,8 @@ public class ImmutableSaplingData extends AbstractImmutableData<ImmutableSapling
         return Sponge.getRegistry().getValueFactory().createValue(SaplingKeys.CRAZY_TREE_LEAVE, BlockTypes.LEAVES.getDefaultState(), this.leave).asImmutable();
     }
 
-
-
     @Override
     protected void registerGetters() {
-    //    registerFieldGetter(SaplingKeys.CRAZY_TREE_TYPE, this::getTreeType);
-    //    registerKeyValue(SaplingKeys.CRAZY_TREE_TYPE, this::crazyTreeType);
-
         registerFieldGetter(SaplingKeys.CRAZY_TREE_LEAVE, this::getLeave);
         registerKeyValue(SaplingKeys.CRAZY_TREE_LEAVE, this::leave);
 
@@ -65,14 +52,13 @@ public class ImmutableSaplingData extends AbstractImmutableData<ImmutableSapling
 
     @Override
     public SaplingData asMutable() {
-        return new SaplingData(/*this.treeType,*/ this.log, this.leave);
+        return new SaplingData(this.log, this.leave);
     }
 
     @Override
     public int compareTo(ImmutableSaplingData o) {
         return ComparisonChain.start()
                 .compare(o.leave, this.leave, blockStateComparator)
-            //    .compare(o.treeType, this.treeType)
                 .compare(o.log, this.log, blockStateComparator)
                 .result();
     }
@@ -87,13 +73,8 @@ public class ImmutableSaplingData extends AbstractImmutableData<ImmutableSapling
         return new MemoryDataContainer()
                 .set(SaplingKeys.CRAZY_TREE_LOG, this.log)
                 .set(SaplingKeys.CRAZY_TREE_LEAVE, this.leave);
-             //   .set(SaplingKeys.CRAZY_TREE_TYPE, this.treeType);
     }
 
- /*   private CrazyTreeType getTreeType() {
-        return this.treeType;
-    }
-*/
     private BlockState getLog() {
         return this.log;
     }

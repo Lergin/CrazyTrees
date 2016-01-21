@@ -9,10 +9,7 @@ import com.flowpowered.math.vector.Vector3d;
 import com.google.inject.Inject;
 import de.lergin.sponge.worldgentest.crazyTrees.CrazyTree;
 import de.lergin.sponge.worldgentest.crazyTrees.CrazyTreeType;
-import de.lergin.sponge.worldgentest.data.saplingData.SaplingData;
-import de.lergin.sponge.worldgentest.data.saplingData.SaplingDataManipulatorBuilder;
-import de.lergin.sponge.worldgentest.data.saplingData.ImmutableSaplingData;
-import de.lergin.sponge.worldgentest.data.saplingData.SaplingKeys;
+import de.lergin.sponge.worldgentest.data.saplingData.*;
 import org.slf4j.Logger;
 import org.spongepowered.api.CatalogTypes;
 import org.spongepowered.api.Sponge;
@@ -56,6 +53,8 @@ public class worldgentest {
     @Listener
     public void onGamePreInitialization(GamePreInitializationEvent event) {
         Sponge.getDataManager().register(SaplingData.class, ImmutableSaplingData.class, new SaplingDataManipulatorBuilder());
+        Sponge.getDataManager().register(CrazyTreeTypeData.class, ImmutableCrazyTreeTypeData.class,
+                new CrazyTreeTypeDataManipulatorBuilder());
 
 
 
@@ -244,10 +243,12 @@ public class worldgentest {
             if (target.isPresent()) {
                 Player player = target.get();
                 player.offer(new SaplingData(BlockTypes.LOG.getDefaultState(), BlockTypes.LEAVES.getDefaultState()));
+                player.offer(new CrazyTreeTypeData(CrazyTreeType.DELNAS));
             } else {
                 if (src instanceof Player && integer.isPresent()) {
                     Player player = (Player) src;
                     player.offer(new SaplingData( BlockTypes.LOG.getDefaultState(), BlockTypes.LEAVES.getDefaultState()));
+                    player.offer(new CrazyTreeTypeData(integer.get()));
                 }
             }
             return CommandResult.success();
@@ -269,7 +270,7 @@ public class worldgentest {
             } else {
                 if (src instanceof Player) {
                     Player player = (Player) src;
-                    Optional<SaplingData> optional = player.get(SaplingData.class);
+                    Optional<CrazyTreeTypeData> optional = player.get(CrazyTreeTypeData.class);
                     if (optional.isPresent()) {
                         src.sendMessage(Text.of("Data available!"));
                         System.out.println(optional.get().toString());

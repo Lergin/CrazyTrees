@@ -3,6 +3,7 @@ package de.lergin.sponge.worldgentest;
 /**
  * Created by Malte on 07.01.2016.
  */
+
 import de.lergin.sponge.worldgentest.crazyTrees.CrazyTree;
 import de.lergin.sponge.worldgentest.crazyTrees.CrazyTreeBuilder;
 import de.lergin.sponge.worldgentest.crazyTrees.CrazyTreeType;
@@ -62,7 +63,7 @@ class worldgen implements WorldGeneratorModifier {
       // CrazyTree crazyTree = CrazyTree.builder().leaveBlock(BlockTypes.DIAMOND_BLOCK)
       //          .woodBlock(BlockTypes.OBSIDIAN).build();
 
-        Forest forest = Forest.builder().perChunk(VariableAmount.fixed(0.5))
+        Forest forest = Forest.builder().perChunk(VariableAmount.fixed(1))
                 .type(CrazyTreeType.EWACALY.getBuilder().leaveBlock(BlockTypes.HAY_BLOCK).build(), 0.1)
           //      .type(CrazyTreeType.KULIST.getBuilder().leaveBlock(BlockTypes.SPONGE).woodBlock(BlockTypes.LOG2).build(), 0.1)
           //      .type(CrazyTreeType.KULIST.getBuilder().build(), 0.1)

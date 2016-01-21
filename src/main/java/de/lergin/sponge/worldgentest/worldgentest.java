@@ -8,12 +8,12 @@ import static org.spongepowered.api.command.args.GenericArguments.world;
 import com.flowpowered.math.vector.Vector3d;
 import com.google.inject.Inject;
 import de.lergin.sponge.worldgentest.crazyTrees.CrazyTree;
-import de.lergin.sponge.worldgentest.crazyTrees.CrazyTreeBuilder;
 import de.lergin.sponge.worldgentest.crazyTrees.CrazyTreeType;
-import de.lergin.sponge.worldgentest.crazyTrees.dendrology.hekur.HekurTree;
-import de.lergin.sponge.worldgentest.crazyTrees.vanilla.oak.OakTree;
+import de.lergin.sponge.worldgentest.data.saplingData.SaplingData;
+import de.lergin.sponge.worldgentest.data.saplingData.SaplingDataManipulatorBuilder;
+import de.lergin.sponge.worldgentest.data.saplingData.ImmutableSaplingData;
+import de.lergin.sponge.worldgentest.data.saplingData.SaplingKeys;
 import org.slf4j.Logger;
-import org.spongepowered.api.CatalogType;
 import org.spongepowered.api.CatalogTypes;
 import org.spongepowered.api.Sponge;
 import org.spongepowered.api.block.BlockSnapshot;
@@ -22,29 +22,19 @@ import org.spongepowered.api.block.BlockType;
 import org.spongepowered.api.block.BlockTypes;
 import org.spongepowered.api.command.CommandException;
 import org.spongepowered.api.command.CommandResult;
+import org.spongepowered.api.command.CommandSource;
+import org.spongepowered.api.command.args.CommandContext;
+import org.spongepowered.api.command.args.GenericArguments;
+import org.spongepowered.api.command.spec.CommandExecutor;
 import org.spongepowered.api.command.spec.CommandSpec;
-import org.spongepowered.api.data.Transaction;
-import org.spongepowered.api.data.key.Keys;
-import org.spongepowered.api.data.manipulator.mutable.block.PoweredData;
-import org.spongepowered.api.data.type.*;
-import org.spongepowered.api.data.value.immutable.ImmutableValue;
-import org.spongepowered.api.effect.particle.BlockParticle;
 import org.spongepowered.api.effect.particle.ParticleEffect;
 import org.spongepowered.api.effect.particle.ParticleTypes;
-import org.spongepowered.api.entity.Entity;
-import org.spongepowered.api.entity.EntityTypes;
-import org.spongepowered.api.entity.Item;
 import org.spongepowered.api.entity.living.player.Player;
 import org.spongepowered.api.event.Listener;
 import org.spongepowered.api.event.block.ChangeBlockEvent;
-import org.spongepowered.api.event.block.GrowBlockEvent;
 import org.spongepowered.api.event.block.InteractBlockEvent;
-import org.spongepowered.api.event.cause.Cause;
-import org.spongepowered.api.event.game.state.GameAboutToStartServerEvent;
 import org.spongepowered.api.event.game.state.GameInitializationEvent;
 import org.spongepowered.api.event.game.state.GamePreInitializationEvent;
-import org.spongepowered.api.event.item.inventory.DropItemEvent;
-import org.spongepowered.api.event.world.chunk.PopulateChunkEvent;
 import org.spongepowered.api.item.ItemType;
 import org.spongepowered.api.item.ItemTypes;
 import org.spongepowered.api.item.inventory.ItemStack;
@@ -55,7 +45,6 @@ import org.spongepowered.api.world.Location;
 import org.spongepowered.api.world.World;
 import org.spongepowered.api.world.storage.WorldProperties;
 
-import java.util.Iterator;
 import java.util.Optional;
 import java.util.Random;
 
@@ -66,6 +55,10 @@ import java.util.Random;
 public class worldgentest {
     @Listener
     public void onGamePreInitialization(GamePreInitializationEvent event) {
+        Sponge.getDataManager().register(SaplingData.class, ImmutableSaplingData.class, new SaplingDataManipulatorBuilder());
+
+
+
         Sponge.getCommandManager().register(
                 this,
                 CommandSpec.builder()
@@ -104,6 +97,22 @@ public class worldgentest {
     @Listener
     public void onGameInitialization(GameInitializationEvent event) {
         Sponge.getGame().getRegistry().register(CatalogTypes.WORLD_GENERATOR_MODIFIER, new worldgen());
+
+        CommandSpec skillDataSpec = CommandSpec.builder()
+                .description(Text.of("Applies skill data"))
+                .arguments(GenericArguments.optional(GenericArguments.onlyOne(GenericArguments.enumValue(Text.of("amount"), CrazyTreeType.class))))
+                .executor(new SkillDataExecturo())
+                .build();
+        CommandSpec skillValidate = CommandSpec.builder()
+                .description(Text.of("Validates skill data"))
+                .arguments(GenericArguments.optional(GenericArguments.onlyOne(GenericArguments.player(Text.of("player")))))
+                .executor(new SkillValidator())
+                .build();
+
+        Sponge.getGame().getCommandManager().register(this, skillValidate, "validateData");
+        Sponge.getGame().getCommandManager().register(this, skillDataSpec, "fakeData");
+
+
     }
 
     @Listener
@@ -164,6 +173,16 @@ public class worldgentest {
 
 
                     if(itemType == ItemTypes.NETHER_STAR){
+
+                        System.out.println(blockSnapshot.supports(ImmutableSaplingData.class));
+
+
+
+                        Optional<ImmutableSaplingData> optional = blockSnapshot.getOrCreate(ImmutableSaplingData.class);
+                        if (optional.isPresent()) {
+                            System.out.println(optional.get().toString());
+                        }
+
                         crazyTreeBuilder = CrazyTreeType.random();
                     }
 
@@ -212,6 +231,51 @@ public class worldgentest {
                     }
                 }
             }
+        }
+    }
+
+    public static class SkillDataExecturo implements CommandExecutor {
+
+        @Override
+        public CommandResult execute(CommandSource src, CommandContext args) throws CommandException {
+            Optional<Player> target = args.getOne("player");
+            Optional<CrazyTreeType> integer = args.getOne("amount");
+            if (target.isPresent()) {
+                Player player = target.get();
+                player.offer(new SaplingData(integer.get(), BlockTypes.LOG.getDefaultState(), BlockTypes.LEAVES.getDefaultState()));
+            } else {
+                if (src instanceof Player && integer.isPresent()) {
+                    Player player = (Player) src;
+                    player.offer(new SaplingData(integer.get(), BlockTypes.LOG.getDefaultState(), BlockTypes.LEAVES.getDefaultState()));
+                }
+            }
+            return CommandResult.success();
+        }
+    }
+
+    public static class SkillValidator implements CommandExecutor {
+
+        @Override
+        public CommandResult execute(CommandSource src, CommandContext args) throws CommandException {
+            Optional<Player> target = args.getOne("player");
+            if (target.isPresent()) {
+                Player player = target.get();
+                Optional<SaplingData> optional = player.get(SaplingData.class);
+                if (optional.isPresent()) {
+                    src.sendMessage(Text.of("Data available!"));
+                    System.out.println(optional.get().toString());
+                }
+            } else {
+                if (src instanceof Player) {
+                    Player player = (Player) src;
+                    Optional<SaplingData> optional = player.get(SaplingData.class);
+                    if (optional.isPresent()) {
+                        src.sendMessage(Text.of("Data available!"));
+                        System.out.println(optional.get().toString());
+                    }
+                }
+            }
+            return CommandResult.success();
         }
     }
 }

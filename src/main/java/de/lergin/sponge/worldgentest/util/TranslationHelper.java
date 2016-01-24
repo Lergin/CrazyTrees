@@ -44,13 +44,24 @@ public final class TranslationHelper {
     }
 
     /**
+     * returns the translation of the key (as text) in the given language
+     * @param local the language
+     * @param key resourceBundle key
+     * @param args replace arguments
+     * @return the translated text
+     */
+    public static Text t(Locale locale, String key, Object... args) {
+        return Text.of(s(locale, key, args));
+    }
+
+    /**
      * returns the translation of the key in the language of the server
      * @param key resourceBundle key
      * @param args replace arguments
      * @return the translated string
      */
     public static String s(String key, Object... args) {
-        return new ResourceBundleTranslation(key, LOOKUP_FUNC).get(args);
+        return s(Locale.getDefault(), key, args);
     }
 
     /**
@@ -64,11 +75,12 @@ public final class TranslationHelper {
         try {
             return new ResourceBundleTranslation(key, LOOKUP_FUNC).get(local, args);
         }catch(MissingFormatArgumentException e){
-            if(!key.equals("warn.translation.too_many_arguments")){
-                logger.warn(l("warn.translation.too_many_arguments", local.toLanguageTag(), key) + " (ERROR CODE: 1)");
-            }else{
+            // we need to check if the message is our error message so we are not creating a endless loop
+            if(key.equals("warn.translation.too_many_arguments")){
                 logger.warn(String.format("Translation for \"warn.translation.too_many_arguments\" in language %s " +
                         "wants too many arguments", local.toLanguageTag()));
+            }else{
+                logger.warn(l("warn.translation.too_many_arguments", local.toLanguageTag(), key) + " (ERROR CODE: 1)");
             }
 
             return new ResourceBundleTranslation(key, LOOKUP_FUNC).get(local);
@@ -83,7 +95,7 @@ public final class TranslationHelper {
      * @return the translated text
      */
     public static Text p(Player player, String key, Object... args){
-        return Text.of(new ResourceBundleTranslation(key, LOOKUP_FUNC).get(player.getLocale(), args));
+        return t(player.getLocale(), key, args);
     }
 
     /**

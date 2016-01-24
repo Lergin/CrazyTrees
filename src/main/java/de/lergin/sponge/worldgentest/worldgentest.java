@@ -10,6 +10,7 @@ import com.google.inject.Inject;
 import de.lergin.sponge.worldgentest.crazyTrees.CrazyTree;
 import de.lergin.sponge.worldgentest.crazyTrees.CrazyTreeType;
 import de.lergin.sponge.worldgentest.data.saplingData.*;
+import de.lergin.sponge.worldgentest.util.TranslationHelper;
 import org.slf4j.Logger;
 import org.spongepowered.api.CatalogTypes;
 import org.spongepowered.api.Sponge;
@@ -30,6 +31,7 @@ import org.spongepowered.api.entity.living.player.Player;
 import org.spongepowered.api.event.Listener;
 import org.spongepowered.api.event.block.ChangeBlockEvent;
 import org.spongepowered.api.event.block.InteractBlockEvent;
+import org.spongepowered.api.event.game.state.GameConstructionEvent;
 import org.spongepowered.api.event.game.state.GameInitializationEvent;
 import org.spongepowered.api.event.game.state.GamePreInitializationEvent;
 import org.spongepowered.api.item.ItemType;
@@ -42,6 +44,8 @@ import org.spongepowered.api.world.Location;
 import org.spongepowered.api.world.World;
 import org.spongepowered.api.world.storage.WorldProperties;
 
+import java.nio.file.Path;
+import java.util.Locale;
 import java.util.Optional;
 import java.util.Random;
 
@@ -50,6 +54,26 @@ import java.util.Random;
  */
 @Plugin(id = "example", name = "Example Project", version = "1.0")
 public class worldgentest {
+
+    @Inject
+    private Logger logger;
+
+    public Logger getLogger() {
+        return logger;
+    }
+
+
+    private static worldgentest instance;
+
+    public static worldgentest instance() {
+        return instance;
+    }
+
+    @Listener
+    public void gameConstruct(GameConstructionEvent event) {
+        instance = this;
+    }
+
     @Listener
     public void onGamePreInitialization(GamePreInitializationEvent event) {
         Sponge.getDataManager().register(SaplingData.class, ImmutableSaplingData.class, new SaplingDataManipulatorBuilder());
@@ -95,6 +119,16 @@ public class worldgentest {
 
     @Listener
     public void onGameInitialization(GameInitializationEvent event) {
+
+        //translation setup
+        Locale.setDefault(Locale.ENGLISH);
+        logger.info(TranslationHelper.s(Locale.ENGLISH, "translation.default.set", Locale.getDefault().toString()));
+
+        TranslationHelper.setLogLanguage(Locale.ENGLISH);
+        logger.info(TranslationHelper.l("translation.log.set"));
+
+
+
         Sponge.getGame().getRegistry().register(CatalogTypes.WORLD_GENERATOR_MODIFIER, new worldgen());
 
         CommandSpec skillDataSpec = CommandSpec.builder()

@@ -1,1 +1,5 @@
-1: Translation wants too many arguments
+101: Translation wants too many arguments
+102: Config file is empty or doesn't exist
+103: Couldn't load config
+104: Couldn't load default config
+105: Couldn't save config

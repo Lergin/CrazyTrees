@@ -10,6 +10,7 @@ import com.google.inject.Inject;
 import de.lergin.sponge.worldgentest.crazyTrees.CrazyTree;
 import de.lergin.sponge.worldgentest.crazyTrees.CrazyTreeType;
 import de.lergin.sponge.worldgentest.data.saplingData.*;
+import de.lergin.sponge.worldgentest.util.ConfigHelper;
 import de.lergin.sponge.worldgentest.util.TranslationHelper;
 import org.slf4j.Logger;
 import org.spongepowered.api.CatalogTypes;
@@ -25,6 +26,7 @@ import org.spongepowered.api.command.args.CommandContext;
 import org.spongepowered.api.command.args.GenericArguments;
 import org.spongepowered.api.command.spec.CommandExecutor;
 import org.spongepowered.api.command.spec.CommandSpec;
+import org.spongepowered.api.config.ConfigDir;
 import org.spongepowered.api.effect.particle.ParticleEffect;
 import org.spongepowered.api.effect.particle.ParticleTypes;
 import org.spongepowered.api.entity.living.player.Player;
@@ -34,6 +36,7 @@ import org.spongepowered.api.event.block.InteractBlockEvent;
 import org.spongepowered.api.event.game.state.GameConstructionEvent;
 import org.spongepowered.api.event.game.state.GameInitializationEvent;
 import org.spongepowered.api.event.game.state.GamePreInitializationEvent;
+import org.spongepowered.api.event.game.state.GameStoppingEvent;
 import org.spongepowered.api.item.ItemType;
 import org.spongepowered.api.item.ItemTypes;
 import org.spongepowered.api.item.inventory.ItemStack;
@@ -49,11 +52,15 @@ import java.util.Locale;
 import java.util.Optional;
 import java.util.Random;
 
+
 /**
  * Created by Malte on 02.01.2016.
  */
 @Plugin(id = "example", name = "Example Project", version = "1.0")
 public class worldgentest {
+    @Inject
+    @ConfigDir(sharedRoot = false)
+    public Path confDir;
 
     @Inject
     private Logger logger;
@@ -76,6 +83,26 @@ public class worldgentest {
 
     @Listener
     public void onGamePreInitialization(GamePreInitializationEvent event) {
+        ConfigHelper.loadConfig();
+
+        //translation setup
+        Locale.setDefault(
+                Locale.forLanguageTag(
+                        ConfigHelper.getNode("translation", "defaultLanguage").getString("EN")
+                )
+        );
+        logger.info(TranslationHelper.s(Locale.ENGLISH, "translation.default.set", Locale.getDefault().toLanguageTag()));
+
+
+        final Locale logLanguage = Locale.forLanguageTag(
+                ConfigHelper.getNode("translation", "logLanguage").getString("EN")
+        );
+
+        TranslationHelper.setLogLanguage(logLanguage);
+        logger.info(TranslationHelper.l("translation.log.set", logLanguage.toLanguageTag()));
+
+
+
         Sponge.getDataManager().register(SaplingData.class, ImmutableSaplingData.class, new SaplingDataManipulatorBuilder());
         Sponge.getDataManager().register(CrazyTreeTypeData.class, ImmutableCrazyTreeTypeData.class,
                 new CrazyTreeTypeDataManipulatorBuilder());
@@ -119,16 +146,6 @@ public class worldgentest {
 
     @Listener
     public void onGameInitialization(GameInitializationEvent event) {
-
-        //translation setup
-        Locale.setDefault(Locale.ENGLISH);
-        logger.info(TranslationHelper.s(Locale.ENGLISH, "translation.default.set", Locale.getDefault().toString()));
-
-        TranslationHelper.setLogLanguage(Locale.ENGLISH);
-        logger.info(TranslationHelper.l("translation.log.set"));
-
-
-
         Sponge.getGame().getRegistry().register(CatalogTypes.WORLD_GENERATOR_MODIFIER, new worldgen());
 
         CommandSpec skillDataSpec = CommandSpec.builder()
@@ -146,6 +163,10 @@ public class worldgentest {
         Sponge.getGame().getCommandManager().register(this, skillDataSpec, "fakeData");
 
 
+    }
+
+    @Listener void onGameStopping(GameStoppingEvent event){
+        ConfigHelper.saveConfig();
     }
 
     @Listener
@@ -180,9 +201,6 @@ public class worldgentest {
 */
 
     }
-
-    @Inject
-    Logger logger;
 
     CrazyTreeType crazyTreeBuilder = CrazyTreeType.HEKUR;
 

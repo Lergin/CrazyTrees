@@ -77,7 +77,7 @@ public final class TranslationHelper {
         }catch(MissingFormatArgumentException e){
             // we need to check if the message is our error message so we are not creating a endless loop
             if(key.equals("warn.translation.too_many_arguments")){
-                logger.warn(String.format("Translation for \"warn.translation.too_many_arguments\" in language %s " +
+                logger.warn(String.format("Translation for \"warn.translation.too_many_arguments\" in language \"%s\" " +
                         "wants too many arguments", local.toLanguageTag()));
             }else{
                 logger.warn(l("warn.translation.too_many_arguments", local.toLanguageTag(), key) + " (ERROR CODE: 1)");

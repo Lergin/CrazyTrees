@@ -7,11 +7,17 @@ import static org.spongepowered.api.command.args.GenericArguments.world;
 
 import com.flowpowered.math.vector.Vector3d;
 import com.google.inject.Inject;
+import de.lergin.sponge.crazytrees.commands.TestCommand;
+import de.lergin.sponge.crazytrees.commands.TestDataAddCommand;
+import de.lergin.sponge.crazytrees.commands.TestDataValidateCommand;
+import de.lergin.sponge.crazytrees.commands.TestTpWorld;
+import de.lergin.sponge.crazytrees.data.itemDrop.*;
 import de.lergin.sponge.crazytrees.trees.CrazyTree;
 import de.lergin.sponge.crazytrees.trees.CrazyTreeType;
 import de.lergin.sponge.crazytrees.data.saplingData.*;
 import de.lergin.sponge.crazytrees.util.ConfigHelper;
 import de.lergin.sponge.crazytrees.util.TranslationHelper;
+import ninja.leaping.configurate.hocon.HoconConfigurationLoader;
 import org.slf4j.Logger;
 import org.spongepowered.api.CatalogTypes;
 import org.spongepowered.api.Sponge;
@@ -19,16 +25,19 @@ import org.spongepowered.api.block.BlockSnapshot;
 import org.spongepowered.api.block.BlockState;
 import org.spongepowered.api.block.BlockType;
 import org.spongepowered.api.block.BlockTypes;
-import org.spongepowered.api.command.CommandException;
-import org.spongepowered.api.command.CommandResult;
-import org.spongepowered.api.command.CommandSource;
-import org.spongepowered.api.command.args.CommandContext;
 import org.spongepowered.api.command.args.GenericArguments;
-import org.spongepowered.api.command.spec.CommandExecutor;
 import org.spongepowered.api.command.spec.CommandSpec;
 import org.spongepowered.api.config.ConfigDir;
+import org.spongepowered.api.data.DataContainer;
+import org.spongepowered.api.data.DataView;
+import org.spongepowered.api.data.key.Keys;
+import org.spongepowered.api.data.translator.ConfigurateTranslator;
+import org.spongepowered.api.data.type.DoublePlantTypes;
 import org.spongepowered.api.effect.particle.ParticleEffect;
 import org.spongepowered.api.effect.particle.ParticleTypes;
+import org.spongepowered.api.entity.Entity;
+import org.spongepowered.api.entity.EntityTypes;
+import org.spongepowered.api.entity.Item;
 import org.spongepowered.api.entity.living.player.Player;
 import org.spongepowered.api.event.Listener;
 import org.spongepowered.api.event.block.ChangeBlockEvent;
@@ -37,20 +46,17 @@ import org.spongepowered.api.event.game.state.GameConstructionEvent;
 import org.spongepowered.api.event.game.state.GameInitializationEvent;
 import org.spongepowered.api.event.game.state.GamePreInitializationEvent;
 import org.spongepowered.api.event.game.state.GameStoppingEvent;
+import org.spongepowered.api.event.item.inventory.DropItemEvent;
 import org.spongepowered.api.item.ItemType;
 import org.spongepowered.api.item.ItemTypes;
 import org.spongepowered.api.item.inventory.ItemStack;
+import org.spongepowered.api.item.inventory.ItemStackSnapshot;
 import org.spongepowered.api.plugin.Plugin;
 import org.spongepowered.api.text.Text;
-import org.spongepowered.api.text.format.TextColors;
-import org.spongepowered.api.world.Location;
-import org.spongepowered.api.world.World;
-import org.spongepowered.api.world.storage.WorldProperties;
 
+import java.io.*;
 import java.nio.file.Path;
-import java.util.Locale;
-import java.util.Optional;
-import java.util.Random;
+import java.util.*;
 
 
 @Plugin(id = "crazyTrees", name = "Crazy Trees", version = "0.1")
@@ -73,6 +79,8 @@ public class CrazyTreesMain {
         return instance;
     }
 
+    public static final String DISPLAY_NAME_DATA_TRANSMISSION_KEY = UUID.randomUUID().toString();
+
     @Listener
     public void gameConstruct(GameConstructionEvent event) {
         instance = this;
@@ -80,19 +88,24 @@ public class CrazyTreesMain {
 
     @Listener
     public void onGamePreInitialization(GamePreInitializationEvent event) {
+        logger.info(String.valueOf(logger.isDebugEnabled()));
+
         ConfigHelper.loadConfig();
 
         //translation setup
         Locale.setDefault(
                 Locale.forLanguageTag(
-                        ConfigHelper.getNode("translation", "defaultLanguage").getString("EN")
+                        ConfigHelper.getNode("translation", "defaultLanguage").getString("en")
                 )
         );
-        logger.info(TranslationHelper.s(Locale.ENGLISH, "translation.default.set", Locale.getDefault().toLanguageTag()));
+
+        logger.info(
+                TranslationHelper.s(Locale.ENGLISH, "translation.default.set", Locale.getDefault().toLanguageTag())
+        );
 
 
         final Locale logLanguage = Locale.forLanguageTag(
-                ConfigHelper.getNode("translation", "logLanguage").getString("EN")
+                ConfigHelper.getNode("translation", "logLanguage").getString("en")
         );
 
         TranslationHelper.setLogLanguage(logLanguage);
@@ -100,15 +113,51 @@ public class CrazyTreesMain {
 
 
 
-        Sponge.getDataManager().register(SaplingData.class, ImmutableSaplingData.class, new SaplingDataManipulatorBuilder());
+        Sponge.getDataManager().register(SaplingData.class, ImmutableSaplingData.class,
+                new SaplingDataManipulatorBuilder());
         Sponge.getDataManager().register(CrazyTreeTypeData.class, ImmutableCrazyTreeTypeData.class,
                 new CrazyTreeTypeDataManipulatorBuilder());
 
         Sponge.getRegistry().getValueFactory().createValue(SaplingKeys.CRAZY_TREE_TYPE, CrazyTreeType.OAK);
+    }
+
+    @Listener
+    public void onGameInitialization(GameInitializationEvent event) {
+
+        Sponge.getDataManager().register(ItemDropData.class, ImmutableItemDropData.class, new ItemDropDataManipulatorBuilder());
+        Sponge.getDataManager().registerBuilder(ItemDrop.class, new ItemDropBuilder());
 
 
 
+        Sponge.getRegistry().register(CatalogTypes.WORLD_GENERATOR_MODIFIER, new CrazyForestGeneratorModifier());
 
+        Sponge.getCommandManager().register(
+                this,
+                CommandSpec.builder()
+                        .description(Text.of("Validates data"))
+                        .arguments(GenericArguments.optional(GenericArguments.onlyOne(GenericArguments.player(Text.of("player")))))
+                        .executor(new TestDataValidateCommand())
+                        .build(),
+                "validateData");
+
+        Sponge.getCommandManager().register(
+                this,
+                CommandSpec.builder()
+                        .description(Text.of("Validates data"))
+                        .arguments(GenericArguments.optional(GenericArguments.onlyOne(GenericArguments.player(Text.of("player")))))
+                        .executor(new TestDataAddCommand())
+                        .build(),
+                "addData"
+        );
+
+        Sponge.getCommandManager().register(
+                this,
+                CommandSpec.builder()
+                        .description(Text.of("just a test command"))
+                        .executor(new TestCommand())
+                        .build(),
+                "test"
+        );
 
         Sponge.getCommandManager().register(
                 this,
@@ -116,54 +165,10 @@ public class CrazyTreesMain {
                         .description(Text.of("Teleports a player to another world"))
                         .arguments(seq(playerOrSource(Text.of("target")), onlyOne(world(Text.of("world")))))
                         .permission("worldstest.command.tpworld")
-                        .executor((src, args) -> {
-                            final Optional<WorldProperties> optWorldProperties = args.getOne("world");
-                            final Optional<World> optWorld = Sponge.getServer().getWorld(optWorldProperties.get().getWorldName());
-                            if (!optWorld.isPresent()) {
-                                throw new CommandException(Text.of("World [", Text.of(TextColors.AQUA, optWorldProperties.get().getWorldName()),
-                                        "] "
-                                                + "was not found."));
-                            }
-                            for (Player target : args.<Player>getAll("target")) {
-                                target.setLocation(new Location<>(optWorld.get(), optWorld.get().getProperties()
-                                        .getSpawnPosition()));
-                            }
-                            return CommandResult.success();
-                        })
+                        .executor(new TestTpWorld())
                         .build(),
                 "tpworld"
         );
-
-        Sponge.getCommandManager().register(
-                this,
-                CommandSpec.builder()
-                        .description(Text.of("just a test command"))
-                        .permission("worldstest.command.test")
-                        .executor(new test_command())
-                        .build(),
-                "test"
-        );
-    }
-
-    @Listener
-    public void onGameInitialization(GameInitializationEvent event) {
-        Sponge.getGame().getRegistry().register(CatalogTypes.WORLD_GENERATOR_MODIFIER, new CrazyForestGeneratorModifier());
-
-        CommandSpec skillDataSpec = CommandSpec.builder()
-                .description(Text.of("Applies skill data"))
-                .arguments(GenericArguments.optional(GenericArguments.onlyOne(GenericArguments.enumValue(Text.of("amount"), CrazyTreeType.class))))
-                .executor(new SkillDataExecturo())
-                .build();
-        CommandSpec skillValidate = CommandSpec.builder()
-                .description(Text.of("Validates skill data"))
-                .arguments(GenericArguments.optional(GenericArguments.onlyOne(GenericArguments.player(Text.of("player")))))
-                .executor(new SkillValidator())
-                .build();
-
-        Sponge.getGame().getCommandManager().register(this, skillValidate, "validateData");
-        Sponge.getGame().getCommandManager().register(this, skillDataSpec, "fakeData");
-
-
     }
 
     @Listener void onGameStopping(GameStoppingEvent event){
@@ -173,40 +178,79 @@ public class CrazyTreesMain {
     @Listener
     public void onBlockBreak(ChangeBlockEvent.Break event) {
 
-       /* BlockSnapshot blockSnapshot = event.getTransactions().iterator().next().getOriginal();
+        BlockSnapshot blockSnapshot = event.getTransactions().iterator().next().getOriginal();
+
+        logger.info(String.valueOf(blockSnapshot.getState().supports(ImmutableItemDropData.class)));
 
         if (blockSnapshot.supports(Keys.TREE_TYPE)) {
             ItemStack rose = ItemTypes.DOUBLE_PLANT.getTemplate().createStack();
             rose.offer(Keys.DOUBLE_PLANT_TYPE, DoublePlantTypes.ROSE);
-            Optional<Entity> optional = blockSnapshot.getLocation().get().getExtent().createEntity(EntityTypes.ITEM, blockSnapshot.getPosition());
-            if (optional.isPresent()) {
-                Item item = (Item) optional.get();
-                item.offer(Keys.REPRESENTED_ITEM, rose.createSnapshot());
-                blockSnapshot.getLocation().get().getExtent().spawnEntity(item, event.getCause());
-            }
 
+            logger.info(String.valueOf(rose.supports(ItemDropData.class)));
 
-            Optional<TreeType> treeTypeOptional = blockSnapshot.getState().get(Keys.TREE_TYPE);
-            if (treeTypeOptional.isPresent() && treeTypeOptional.get().equals(TreeTypes.BIRCH)) {
+            try {
+                DataContainer dataContainer = ItemStack.of(ItemTypes.DIAMOND, 2).toContainer();
+                StringWriter writer = new StringWriter();
+                HoconConfigurationLoader loader = HoconConfigurationLoader.builder().setSink(() -> new BufferedWriter(writer)).build();
 
+                loader.save(ConfigurateTranslator.instance().translateData(dataContainer));
 
-                ItemStack apple = ItemTypes.APPLE.getTemplate().createStack();
-                Optional<Entity> optionalApple = blockSnapshot.getLocation().get().getExtent().createEntity(EntityTypes.ITEM, blockSnapshot.getPosition());
-                if (optionalApple.isPresent()) {
-                    Item item = (Item) optionalApple.get();
-                    item.offer(Keys.REPRESENTED_ITEM, apple.createSnapshot());
+                String toString = writer.toString();
+
+                rose.offer(Keys.DISPLAY_NAME, Text.of(DISPLAY_NAME_DATA_TRANSMISSION_KEY + toString));
+                Optional<Entity> optional = blockSnapshot.getLocation().get().getExtent().createEntity(EntityTypes.ITEM, blockSnapshot.getPosition());
+                if (optional.isPresent()) {
+                    Item item = (Item) optional.get();
+                    item.offer(Keys.REPRESENTED_ITEM, rose.createSnapshot());
                     blockSnapshot.getLocation().get().getExtent().spawnEntity(item, event.getCause());
+                }
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
+    @Listener
+    public void onTestEvent(DropItemEvent.Destruct event){
+        for (Entity entity : event.getEntities()) {
+            ItemStackSnapshot item = ((Item) entity).getItemData().item().get();
+
+            Optional<Text> displayNameDataOptional = item.get(Keys.DISPLAY_NAME);
+
+            logger.info(String.valueOf(item.supports(SaplingKeys.ITEM_DROP_IDENTIFIER)));
+
+            if (displayNameDataOptional.isPresent()) {
+                Text displayName = displayNameDataOptional.get();
+
+                logger.info(displayName.toPlain());
+
+                if (displayName.toPlain().startsWith(DISPLAY_NAME_DATA_TRANSMISSION_KEY)) {
+
+                    String itemString = displayName.toPlain().substring(36);
+
+                    logger.info(itemString);
+
+                    try {
+                        StringReader reader = new StringReader(itemString);
+
+                        DataView view = ConfigurateTranslator.instance().translateFrom(HoconConfigurationLoader.builder().setSource(() -> new BufferedReader(reader)).build().load());
+
+                        event.getCause().first(Player.class).get().setHelmet(ItemStack.builder().fromContainer(view).build());
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
                 }
             }
         }
-    */
 
+
+        event.setCancelled(false);
     }
 
     CrazyTreeType crazyTreeBuilder = CrazyTreeType.HEKUR;
 
     @Listener
-    public void onItemDrop(InteractBlockEvent.Secondary event) {
+    public void onInteractBlockSecondary(InteractBlockEvent.Secondary event) {
         BlockSnapshot blockSnapshot = event.getTargetBlock();
 
         if(blockSnapshot.getState().getType() == BlockTypes.SAPLING){
@@ -214,10 +258,6 @@ public class CrazyTreesMain {
 
             if(playerOptional.isPresent()){
                 Player player = playerOptional.get();
-
-                player.sendMessage(TranslationHelper.p(player, "test"));
-
-                logger.info(TranslationHelper.s("test"));
 
                 Optional<ItemStack> itemStackOptional = player.getItemInHand();
 
@@ -305,7 +345,7 @@ public class CrazyTreesMain {
     }
 
     @Listener
-    public void onItemDrops(ChangeBlockEvent.Place event) {
+    public void onChangeBlockEventPlace(ChangeBlockEvent.Place event) {
 
       /*  BlockSnapshot blockSnapshot = event.getTransactions().iterator().next().getOriginal();
         System.out.println(blockSnapshot.getState().supports(SaplingKeys.CRAZY_TREE_TYPE));
@@ -324,55 +364,5 @@ public class CrazyTreesMain {
         if (optional.isPresent()) {
             System.out.println(optional.get().toString());
         }*/
-    }
-
-    public static class SkillDataExecturo implements CommandExecutor {
-
-        @Override
-        public CommandResult execute(CommandSource src, CommandContext args) throws CommandException {
-
-            Optional<Player> target = args.getOne("player");
-            Optional<CrazyTreeType> integer = args.getOne("amount");
-            if (target.isPresent()) {
-                Player player = target.get();
-                player.offer(new SaplingData(BlockTypes.LOG.getDefaultState(), BlockTypes.LEAVES.getDefaultState()));
-                player.offer(new CrazyTreeTypeData(CrazyTreeType.DELNAS));
-            } else {
-                if (src instanceof Player && integer.isPresent()) {
-                    Player player = (Player) src;
-                    player.offer(new SaplingData( BlockTypes.LOG.getDefaultState(), BlockTypes.LEAVES.getDefaultState()));
-                    player.offer(new CrazyTreeTypeData(integer.get()));
-                }
-            }
-            return CommandResult.success();
-        }
-    }
-
-    public static class SkillValidator implements CommandExecutor {
-
-        @Override
-        public CommandResult execute(CommandSource src, CommandContext args) throws CommandException {
-            Optional<Player> target = args.getOne("player");
-            if (target.isPresent()) {
-                Player player = target.get();
-                Optional<SaplingData> optional = player.get(SaplingData.class);
-                if (optional.isPresent()) {
-                    src.sendMessage(Text.of("Data available!"));
-                    System.out.println(optional.get().toString());
-                }
-            } else {
-                if (src instanceof Player) {
-                    Player player = (Player) src;
-                    Optional<CrazyTreeTypeData> optional = player.get(CrazyTreeTypeData.class);
-                    Optional<SaplingData> optional2 = player.get(SaplingData.class);
-                    if (optional.isPresent() && optional2.isPresent()) {
-                        src.sendMessage(Text.of("Data available!"));
-                        System.out.println(optional.get().toString());
-                        System.out.println(optional2.get().toString());
-                    }
-                }
-            }
-            return CommandResult.success();
-        }
     }
 }

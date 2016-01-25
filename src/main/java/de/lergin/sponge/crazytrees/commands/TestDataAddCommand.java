@@ -16,6 +16,7 @@ import org.spongepowered.api.item.ItemTypes;
 import org.spongepowered.api.item.inventory.ItemStack;
 import org.spongepowered.api.text.Text;
 
+import java.util.ArrayList;
 import java.util.Optional;
 
 /**
@@ -26,20 +27,25 @@ public class TestDataAddCommand implements CommandExecutor {
     public CommandResult execute(CommandSource src, CommandContext args) throws CommandException {
         src.sendMessage(Text.of("SADSADDSADSADSA"));
 
+        ArrayList<ItemStack> itemStacks = new ArrayList<>();
+        itemStacks.add(ItemStack.of(ItemTypes.ANVIL, 23));
+        itemStacks.add(ItemStack.of(ItemTypes.BANNER, 1));
+
         Optional<Player> target = args.getOne("player");
         Optional<CrazyTreeType> integer = args.getOne("amount");
         if (target.isPresent()) {
             Player player = target.get();
             player.offer(new SaplingData(BlockTypes.LOG.getDefaultState(), BlockTypes.LEAVES.getDefaultState()));
             player.offer(new CrazyTreeTypeData(CrazyTreeType.DELNAS));
-            player.offer(new ItemDropDataManipulatorBuilder().setItemDrop(new ItemDrop("hello", player.getWorld().getName(), player.getLocation().getPosition(), ItemStack.of(ItemTypes.ITEM_FRAME, 23))).create());
+            player.offer(new ItemDropDataManipulatorBuilder().setItemDrop(new ItemDrop(itemStacks)).create());
         } else {
             if (src instanceof Player) {
                 Player player = (Player) src;
                 player.sendMessage(Text.of("WEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE"));
                 player.offer(new SaplingData( BlockTypes.LOG.getDefaultState(), BlockTypes.LEAVES.getDefaultState()));
 //                player.offer(new CrazyTreeTypeData(integer.get()));
-                player.offer(new ItemDropDataManipulatorBuilder().setItemDrop(new ItemDrop("hello", player.getWorld().getName(), player.getLocation().getPosition(), ItemStack.of(ItemTypes.ITEM_FRAME, 23))).create());
+
+                player.offer(new ItemDropDataManipulatorBuilder().setItemDrop(new ItemDrop(itemStacks)).create());
             }
         }
         return CommandResult.success();

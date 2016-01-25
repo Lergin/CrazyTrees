@@ -15,80 +15,23 @@ import java.util.List;
  * Created by Malte on 25.01.2016.
  */
 public class ItemDrop implements DataSerializable {
-    private double x;
-    private double y;
-    private double z;
-    private List<String> groups;
-    private String name;
-    private String world;
-    private ItemStack itemStack = ItemStack.of(ItemTypes.POISONOUS_POTATO, 3);
+    private List<ItemStack> itemStacks = new ArrayList<>();
 
-    public ItemDrop(String name, String world, Vector3d position, ItemStack itemStack) {
-        this.x = position.getX();
-        this.y = position.getY();
-        this.z = position.getZ();
-        this.name = name;
-        this.world = world;
-        this.itemStack = itemStack;
+    public ItemDrop(List<ItemStack> itemStacks) {
+        this.itemStacks = itemStacks;
     }
 
-    public double getX() {
-        return this.x;
+    public List<ItemStack> getItemStacks() {
+        return itemStacks;
     }
 
-    public void setX(double x) {
-        this.x = x;
+    public void addItemStack(ItemStack itemStack){
+        this.itemStacks.add(itemStack);
     }
-
-    public double getY() {
-        return this.y;
-    }
-
-    public void setY(double y) {
-        this.y = y;
-    }
-
-    public double getZ() {
-        return this.z;
-    }
-
-    public void setZ(double z) {
-        this.z = z;
-    }
-
-    public String getName() {
-        return this.name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    public String getWorld() {
-        return this.world;
-    }
-
-    public void setWorld(String world) {
-        this.world = world;
-    }
-
-    public List<String> getGroups() {
-        if (this.groups == null) {
-            this.groups = new ArrayList<>();
-        }
-        return this.groups;
-    }
-
-    public void setGroups(List<String> groups) {
-        this.groups = groups;
-    }
-
 
     @Override
     public String toString() {
-        return "Warp [name=" + this.name + ", world=" + this.world + ", x=" + this.x + ", y=" + this.y + ", z="
-                + this.z + ", groups=" + this.groups + ", item_stack=" + this.itemStack.toString()
-                + "]";
+        return "ItemDrop [itemStacks=" + this.getItemStacks().toString() + "]";
     }
 
     @Override
@@ -99,12 +42,6 @@ public class ItemDrop implements DataSerializable {
     @Override
     public DataContainer toContainer() {
         return new MemoryDataContainer()
-                .set(DataQueries.NAME, getName())
-                .set(DataQueries.WORLD, getWorld())
-                .set(DataQueries.X, getX())
-                .set(DataQueries.Y, getY())
-                .set(DataQueries.Z, getZ())
-                .set(DataQueries.GROUPS, getGroups())
-                .set(DataQueries.ITEM_STACK, itemStack);
+                .set(DataQueries.ITEM_STACKS, itemStacks);
     }
 }

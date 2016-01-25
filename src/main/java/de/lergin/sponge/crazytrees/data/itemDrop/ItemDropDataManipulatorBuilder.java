@@ -9,13 +9,14 @@ import org.spongepowered.api.item.ItemTypes;
 import org.spongepowered.api.item.inventory.ItemStack;
 import org.spongepowered.api.util.persistence.InvalidDataException;
 
+import java.util.ArrayList;
 import java.util.Optional;
 
 /**
  * Created by Malte on 25.01.2016.
  */
 public class ItemDropDataManipulatorBuilder implements DataManipulatorBuilder<ItemDropData, ImmutableItemDropData> {
-    private ItemDrop itemDrop = new ItemDrop("", "world", Vector3d.FORWARD, ItemStack.of(ItemTypes.NONE, 1));
+    private ItemDrop itemDrop = new ItemDrop(new ArrayList<>());
 
     @Override
     public ItemDropData create() {

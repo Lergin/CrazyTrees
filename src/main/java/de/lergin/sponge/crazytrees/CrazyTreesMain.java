@@ -42,6 +42,7 @@ import org.spongepowered.api.entity.living.player.Player;
 import org.spongepowered.api.event.Listener;
 import org.spongepowered.api.event.block.ChangeBlockEvent;
 import org.spongepowered.api.event.block.InteractBlockEvent;
+import org.spongepowered.api.event.cause.Cause;
 import org.spongepowered.api.event.game.state.GameConstructionEvent;
 import org.spongepowered.api.event.game.state.GameInitializationEvent;
 import org.spongepowered.api.event.game.state.GamePreInitializationEvent;
@@ -88,8 +89,6 @@ public class CrazyTreesMain {
 
     @Listener
     public void onGamePreInitialization(GamePreInitializationEvent event) {
-        logger.info(String.valueOf(logger.isDebugEnabled()));
-
         ConfigHelper.loadConfig();
 
         //translation setup
@@ -180,14 +179,9 @@ public class CrazyTreesMain {
 
         BlockSnapshot blockSnapshot = event.getTransactions().iterator().next().getOriginal();
 
-        logger.info(String.valueOf(blockSnapshot.getState().supports(ImmutableItemDropData.class)));
-
         if (blockSnapshot.supports(Keys.TREE_TYPE)) {
             ItemStack rose = ItemTypes.DOUBLE_PLANT.getTemplate().createStack();
             rose.offer(Keys.DOUBLE_PLANT_TYPE, DoublePlantTypes.ROSE);
-
-            logger.info(String.valueOf(rose.supports(ItemDropData.class)));
-
             try {
                 DataContainer dataContainer = ItemStack.of(ItemTypes.DIAMOND, 2).toContainer();
                 StringWriter writer = new StringWriter();
@@ -217,8 +211,6 @@ public class CrazyTreesMain {
 
             Optional<Text> displayNameDataOptional = item.get(Keys.DISPLAY_NAME);
 
-            logger.info(String.valueOf(item.supports(SaplingKeys.ITEM_DROP_IDENTIFIER)));
-
             if (displayNameDataOptional.isPresent()) {
                 Text displayName = displayNameDataOptional.get();
 
@@ -236,15 +228,14 @@ public class CrazyTreesMain {
                         DataView view = ConfigurateTranslator.instance().translateFrom(HoconConfigurationLoader.builder().setSource(() -> new BufferedReader(reader)).build().load());
 
                         event.getCause().first(Player.class).get().setHelmet(ItemStack.builder().fromContainer(view).build());
+
+                        event.setCancelled(true);
                     } catch (IOException e) {
                         e.printStackTrace();
                     }
                 }
             }
         }
-
-
-        event.setCancelled(false);
     }
 
     CrazyTreeType crazyTreeBuilder = CrazyTreeType.HEKUR;

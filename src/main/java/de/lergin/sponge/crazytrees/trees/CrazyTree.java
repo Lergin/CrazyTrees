@@ -16,9 +16,7 @@ import org.spongepowered.api.world.Location;
 import org.spongepowered.api.world.World;
 import org.spongepowered.api.world.gen.PopulatorObject;
 
-import java.util.ArrayList;
-import java.util.Optional;
-import java.util.Random;
+import java.util.*;
 
 public abstract class CrazyTree implements PopulatorObject, DataSerializable {
     BlockState woodBlock;
@@ -104,6 +102,10 @@ public abstract class CrazyTree implements PopulatorObject, DataSerializable {
         this.placeObject(world, random, location.getBlockX(), location.getBlockY(), location.getBlockZ());
     }
 
+    public Boolean canPlaceAt(Location<World> location){
+        return this.canPlaceAt(location.getExtent(), location.getBlockX(), location.getBlockY(), location.getBlockZ());
+    }
+
     //TODO: change to something better ;)
     @Override
     public String getId() {
@@ -146,8 +148,8 @@ public abstract class CrazyTree implements PopulatorObject, DataSerializable {
         private BlockState leaveBlock = BlockState.builder().blockType(BlockTypes.LEAVES).build();
         private boolean placeBlockUnderTree = true;
         private BlockState underTreeBlock = BlockState.builder().blockType(BlockTypes.DIRT).build();
-        private ArrayList<BlockState> replaceBlocks = new ArrayList<>();
-        private ArrayList<BlockState> groundBlocks = new ArrayList<>();
+        private List<BlockState> replaceBlocks = Arrays.asList(BlockTypes.AIR.getDefaultState());
+        private List<BlockState> groundBlocks = Arrays.asList(BlockTypes.DIRT.getDefaultState(), BlockTypes.GRASS.getDefaultState());
         private int treeHeightMax = 7;
         private int treeHeightMin = 4;
 
@@ -281,18 +283,13 @@ public abstract class CrazyTree implements PopulatorObject, DataSerializable {
             crazyTree.treeHeightMin = this.treeHeightMin;
             crazyTree.placeBlockUnderTree = this.placeBlockUnderTree;
 
-            if(this.groundBlocks.size() == 0){
-                this.groundBlocks.add(BlockState.builder().blockType(BlockTypes.DIRT).build());
-                this.groundBlocks.add(BlockState.builder().blockType(BlockTypes.GRASS).build());
-            }
+            ArrayList<BlockState> groundBlocks = new ArrayList<>();
+            groundBlocks.addAll(this.groundBlocks);
+            crazyTree.groundBlocks = groundBlocks;
 
-            crazyTree.groundBlocks = this.groundBlocks;
-
-            if(this.replaceBlocks.size() == 0){
-                this.replaceBlocks.add(BlockState.builder().blockType(BlockTypes.AIR).build());
-            }
-
-            crazyTree.replaceBlocks = this.replaceBlocks;
+            ArrayList<BlockState> replaceBlocks = new ArrayList<>();
+            replaceBlocks.addAll(this.replaceBlocks);
+            crazyTree.replaceBlocks = replaceBlocks;
 
             return crazyTree;
         }
@@ -321,11 +318,14 @@ public abstract class CrazyTree implements PopulatorObject, DataSerializable {
                 ImmutableList<DataView> groundBlockImmutableList =
                         (ImmutableList<DataView>) dataView.get(DataQueries.GROUND_BLOCKS).get();
 
+                ArrayList<BlockState> groundBlocks = new ArrayList<>();
 
                 for(DataView blockDataView : groundBlockImmutableList){
-                    crazyTreeBuilder.groundBlock(BlockState.builder().build(blockDataView).get());
+                    groundBlocks.add(BlockState.builder().build(blockDataView).get());
                 }
-            }
+
+                crazyTreeBuilder.groundBlocks(groundBlocks);
+        }
 
             if (dataView.contains(DataQueries.PLACE_BLOCK_UNDER_TREE)) {
                 crazyTreeBuilder.placeBlockUnderTree((Boolean) dataView.get(DataQueries.PLACE_BLOCK_UNDER_TREE).get());
@@ -335,9 +335,13 @@ public abstract class CrazyTree implements PopulatorObject, DataSerializable {
                 ImmutableList<DataView> replaceBlockImmutableList =
                         (ImmutableList<DataView>) dataView.get(DataQueries.REPLACE_BLOCKS).get();
 
+                ArrayList<BlockState> replaceBlocks = new ArrayList<>();
+
                 for(DataView blockDataView : replaceBlockImmutableList){
-                    crazyTreeBuilder.replaceBlock(BlockState.builder().build(blockDataView).get());
+                    replaceBlocks.add(BlockState.builder().build(blockDataView).get());
                 }
+
+                crazyTreeBuilder.replaceBlocks(replaceBlocks);
             }
 
             if (dataView.contains(DataQueries.TREE_HEIGHT_MAX) && dataView.contains(DataQueries.TREE_HEIGHT_MIN)) {

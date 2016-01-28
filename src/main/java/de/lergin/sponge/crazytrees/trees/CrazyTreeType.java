@@ -23,14 +23,14 @@ public enum CrazyTreeType {
     CEDRUM(new CedrumTree.Builder().treeHeight(19,10)),
     CEDRUM_LARGE(new CedrumTreeLarge.Builder().treeHeight(24,12)),
     DELNAS(new DelnasTree.Builder().treeHeight(11,6)),
-    HEKUR(new HekurTree.Builder().treeHeight(0,0)),
-    HEKUR_LARGE(new HekurTreeLarge.Builder().treeHeight(0,0)),
+    HEKUR(new HekurTree.Builder().treeHeight(1,1)),
+    HEKUR_LARGE(new HekurTreeLarge.Builder().treeHeight(1,1)),
     KIPARIS(new KiparisTree.Builder().treeHeight(17,5)),
     KULIST(new KulistTree.Builder().treeHeight(11,6)),
     KULIST_LARGE(new KulistTreeLarge.Builder().treeHeight(18,9)),
     LATA(new LataTree.Builder().treeHeight(21,15)),
     NUCIS(new NucisTree.Builder().treeHeight(23,15)),
-    SALYX(new SalyxTree.Builder().treeHeight(6,0)),
+    SALYX(new SalyxTree.Builder().treeHeight(1,1)),
     TUOPA(new TuopaTree.Builder().treeHeight(4,1)),
 
     //like Vanilla

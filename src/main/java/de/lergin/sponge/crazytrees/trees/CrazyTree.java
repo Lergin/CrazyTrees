@@ -1,16 +1,26 @@
 package de.lergin.sponge.crazytrees.trees;
 
+import com.google.common.collect.ImmutableList;
+import de.lergin.sponge.crazytrees.data.DataQueries;
+import de.lergin.sponge.crazytrees.trees.vanilla.oak.OakTree;
 import org.spongepowered.api.block.BlockState;
 import org.spongepowered.api.block.BlockType;
 import org.spongepowered.api.block.BlockTypes;
+import org.spongepowered.api.data.DataContainer;
+import org.spongepowered.api.data.DataSerializable;
+import org.spongepowered.api.data.DataView;
+import org.spongepowered.api.data.MemoryDataContainer;
+import org.spongepowered.api.util.persistence.DataBuilder;
+import org.spongepowered.api.util.persistence.InvalidDataException;
 import org.spongepowered.api.world.Location;
 import org.spongepowered.api.world.World;
 import org.spongepowered.api.world.gen.PopulatorObject;
 
 import java.util.ArrayList;
+import java.util.Optional;
 import java.util.Random;
 
-public abstract class CrazyTree implements PopulatorObject {
+public abstract class CrazyTree implements PopulatorObject, DataSerializable {
     BlockState woodBlock;
     BlockState leaveBlock;
     boolean placeBlockUnderTree;
@@ -105,10 +115,33 @@ public abstract class CrazyTree implements PopulatorObject {
         return "crazyTree";
     }
 
+    @Override
+    public String toString(){
+        return "CrazyTree [treeType=" + this.getName() + ", maxHeight=" + this.getTreeHeightMax() + " ]";
+    }
+
+    @Override
+    public int getContentVersion() {
+        return 0;
+    }
+
+    @Override
+    public DataContainer toContainer() {
+        return new MemoryDataContainer()
+                .set(DataQueries.WOOD_BLOCK, woodBlock)
+                .set(DataQueries.LEAVE_BLOCK, leaveBlock)
+                .set(DataQueries.PLACE_BLOCK_UNDER_TREE, placeBlockUnderTree)
+                .set(DataQueries.UNDER_TREE_BLOCK, underTreeBlock)
+                .set(DataQueries.REPLACE_BLOCKS, replaceBlocks)
+                .set(DataQueries.GROUND_BLOCKS, groundBlocks)
+                .set(DataQueries.TREE_HEIGHT_MAX, treeHeightMax)
+                .set(DataQueries.TREE_HEIGHT_MIN, treeHeightMin);
+    }
+
     /**
      * the Builder for CrazyTrees
      */
-    public static abstract class Builder {
+    public static abstract class Builder implements DataBuilder<CrazyTree> {
         private BlockState woodBlock = BlockState.builder().blockType(BlockTypes.LOG).build();
         private BlockState leaveBlock = BlockState.builder().blockType(BlockTypes.LEAVES).build();
         private boolean placeBlockUnderTree = true;
@@ -167,6 +200,14 @@ public abstract class CrazyTree implements PopulatorObject {
             return this;
         }
 
+        public Integer getTreeHeightMax() {
+            return this.treeHeightMax;
+        }
+
+        public Integer getTreeHeightMin() {
+            return this.treeHeightMin;
+        }
+
         /**
          * adds a BlockState that will be replaced by this Tree
          * @param replaceBlock the BlockState
@@ -211,6 +252,17 @@ public abstract class CrazyTree implements PopulatorObject {
             return this;
         }
 
+        /**
+         *
+         * @param groundBlocks
+         * @return self
+         */
+        public Builder groundBlocks(ArrayList<BlockState> groundBlocks) {
+            this.groundBlocks = groundBlocks;
+
+            return this;
+        }
+
         public abstract CrazyTree getTreeType();
 
         public CrazyTree build() {
@@ -237,6 +289,68 @@ public abstract class CrazyTree implements PopulatorObject {
             crazyTree.replaceBlocks = this.replaceBlocks;
 
             return crazyTree;
+        }
+
+        public Optional<CrazyTree> build(DataView dataView) throws InvalidDataException {
+            CrazyTree.Builder crazyTreeBuilder = new OakTree.Builder();
+
+
+            if (dataView.contains(DataQueries.WOOD_BLOCK)) {
+                crazyTreeBuilder.woodBlock(
+                        BlockState.builder().build(
+                                (DataView) dataView.get(DataQueries.WOOD_BLOCK).get()
+                        ).get()
+                );
+            }
+
+            if (dataView.contains(DataQueries.LEAVE_BLOCK)) {
+                crazyTreeBuilder.leaveBlock(
+                        BlockState.builder().build(
+                                (DataView) dataView.get(DataQueries.LEAVE_BLOCK).get()
+                        ).get()
+                );
+            }
+
+            if (dataView.contains(DataQueries.GROUND_BLOCKS)) {
+                ImmutableList<DataView> groundBlockImmutableList =
+                        (ImmutableList<DataView>) dataView.get(DataQueries.GROUND_BLOCKS).get();
+
+
+                for(DataView blockDataView : groundBlockImmutableList){
+                    crazyTreeBuilder.groundBlock(BlockState.builder().build(blockDataView).get());
+                }
+            }
+
+            if (dataView.contains(DataQueries.PLACE_BLOCK_UNDER_TREE)) {
+                crazyTreeBuilder.placeBlockUnderTree((Boolean) dataView.get(DataQueries.PLACE_BLOCK_UNDER_TREE).get());
+            }
+
+            if (dataView.contains(DataQueries.REPLACE_BLOCKS)) {
+                ImmutableList<DataView> replaceBlockImmutableList =
+                        (ImmutableList<DataView>) dataView.get(DataQueries.REPLACE_BLOCKS).get();
+
+                for(DataView blockDataView : replaceBlockImmutableList){
+                    crazyTreeBuilder.replaceBlock(BlockState.builder().build(blockDataView).get());
+                }
+            }
+
+            if (dataView.contains(DataQueries.TREE_HEIGHT_MAX) && dataView.contains(DataQueries.TREE_HEIGHT_MIN)) {
+                crazyTreeBuilder.treeHeight(
+                        (Integer) dataView.get(DataQueries.TREE_HEIGHT_MAX).get(),
+                        (Integer) dataView.get(DataQueries.TREE_HEIGHT_MIN).get()
+                );
+            }
+
+            if (dataView.contains(DataQueries.UNDER_TREE_BLOCK)) {
+                crazyTreeBuilder.underTreeBlock(
+                        BlockState.builder().build(
+                                (DataView) dataView.get(DataQueries.UNDER_TREE_BLOCK).get()
+                        ).get()
+                );
+            }
+
+
+            return Optional.of(crazyTreeBuilder.build());
         }
 
     }

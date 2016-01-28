@@ -1,6 +1,7 @@
 package de.lergin.sponge.crazytrees.data.saplingData;
 
 import de.lergin.sponge.crazytrees.data.CrazyTreeKeys;
+import de.lergin.sponge.crazytrees.trees.CrazyTree;
 import org.spongepowered.api.Sponge;
 import org.spongepowered.api.data.key.Key;
 import org.spongepowered.api.data.manipulator.immutable.common.AbstractImmutableSingleData;
@@ -12,15 +13,15 @@ import java.util.Optional;
 /**
  * Created by Malte on 25.01.2016.
  */
-public class ImmutableCrazySaplingData extends AbstractImmutableSingleData<CrazySapling, ImmutableCrazySaplingData, CrazySaplingData> {
+public class ImmutableCrazySaplingData extends AbstractImmutableSingleData<CrazyTree, ImmutableCrazySaplingData, CrazySaplingData> {
 
-    protected ImmutableCrazySaplingData(CrazySapling value) {
-        super(value, CrazyTreeKeys.CRAZY_SAPLING);
+    protected ImmutableCrazySaplingData(CrazyTree value) {
+        super(value, CrazyTreeKeys.CRAZY_TREE);
     }
 
     @Override
     protected ImmutableValue<?> getValueGetter() {
-        return Sponge.getRegistry().getValueFactory().createValue(CrazyTreeKeys.CRAZY_SAPLING, getValue()).asImmutable();
+        return Sponge.getRegistry().getValueFactory().createValue(CrazyTreeKeys.CRAZY_TREE, getValue()).asImmutable();
     }
 
     @Override

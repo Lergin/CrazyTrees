@@ -10,7 +10,6 @@ import org.spongepowered.api.data.manipulator.DataManipulatorBuilder;
 import org.spongepowered.api.data.value.mutable.Value;
 import org.spongepowered.api.util.persistence.InvalidDataException;
 
-import java.util.ArrayList;
 import java.util.Optional;
 
 /**
@@ -19,11 +18,9 @@ import java.util.Optional;
 public class CrazySaplingManipulatorBuilder implements DataManipulatorBuilder<CrazySaplingData, ImmutableCrazySaplingData> {
     private CrazyTree crazyTree = CrazyTreeType.OAK.get();
 
-    private final Key<Value<CrazySapling>> key = CrazyTreeKeys.CRAZY_SAPLING;
-
     @Override
     public CrazySaplingData create() {
-        return new CrazySaplingData(new CrazySapling(crazyTree));
+        return new CrazySaplingData(crazyTree);
     }
 
     public CrazySaplingManipulatorBuilder setTree(CrazyTree crazyTree) {
@@ -38,11 +35,11 @@ public class CrazySaplingManipulatorBuilder implements DataManipulatorBuilder<Cr
 
     @Override
     public Optional<CrazySaplingData> build(DataView dataView) throws InvalidDataException {
-        if (!dataView.contains(key.getQuery())) {
+        if (!dataView.contains(CrazyTreeKeys.CRAZY_TREE.getQuery())) {
             return Optional.empty();
         }
         CrazySaplingData crazySaplingData = this.create();
-        crazySaplingData = crazySaplingData.set(key, dataView.getSerializable(key.getQuery(), CrazySapling.class).get());
+        crazySaplingData = crazySaplingData.set(CrazyTreeKeys.CRAZY_TREE, dataView.getSerializable(CrazyTreeKeys.CRAZY_TREE.getQuery(), CrazyTree.class).get());
         return Optional.of(crazySaplingData);
     }
 }

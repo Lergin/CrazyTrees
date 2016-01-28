@@ -15,7 +15,7 @@ public abstract class DendrologyTree extends CrazyTree {
 
     @Override
     public boolean canPlaceAt(World world, int x, int y, int z) {
-        return canPlaceAt(world, x, y, z, this.getTreeHeightMin()) && this.getGroundBlocks().contains(world.getBlock(x, y - 1, z));
+        return canPlaceAt(world, x, y, z, this.getTreeHeightMin()) && (this.getGroundBlocks().contains(world.getBlock(x, y - 1, z)) || this.getGroundBlocks().isEmpty());
     }
 
     public boolean canPlaceAt(World world, int x, int y, int z, int height) {
@@ -27,7 +27,7 @@ public abstract class DendrologyTree extends CrazyTree {
 
     public boolean hasRoomToGrow(World world, int x, int y, int z, int height) {
         for (int y1 = y; y1 <= y + 1 + height; ++y1)
-            if (!this.getReplaceBlocks().contains(world.getBlock(x, y1, z))) return false;
+            if (!this.getReplaceBlocks().contains(world.getBlock(x, y1, z)) && !this.getReplaceBlocks().isEmpty()) return false;
 
         return true;
     }
@@ -44,11 +44,12 @@ public abstract class DendrologyTree extends CrazyTree {
     }
 
     public boolean canBeReplacedByLog(Location<World> loc) {
-        return this.getReplaceBlocks().contains(loc.getBlock()) || loc.getBlock() == this.getLeaveBlock();
+        return this.getReplaceBlocks().contains(loc.getBlock()) || this.getReplaceBlocks().isEmpty() || loc.getBlock() == this.getLeaveBlock();
     }
 
     public void placeLeaves(World world, int x, int y, int z) {
-        if (this.getReplaceBlocks().contains(world.getBlock(x, y, z)))
+        if (this.getReplaceBlocks().contains(world.getBlock(x, y, z)) || this.getReplaceBlocks().isEmpty()
+                && world.getBlock(x,y,z) != this.getWoodBlock())
             world.getLocation(x, y, z).setBlock(this.getLeaveBlock());
     }
 

@@ -16,6 +16,7 @@ import org.spongepowered.api.entity.living.player.Player;
 import org.spongepowered.api.item.ItemTypes;
 import org.spongepowered.api.item.inventory.ItemStack;
 
+import java.util.ArrayList;
 import java.util.Optional;
 
 /**
@@ -72,6 +73,9 @@ public class GetSaplingCommandExecutor implements CommandExecutor {
                 (Integer) args.getOne("height").orElse(crazyTree.getTreeHeightMax()),
                 (Integer) args.getOne("height").orElse(crazyTree.getTreeHeightMin())
         );
+
+        crazyTree.placeBlockUnderTree(false);
+        crazyTree.replaceBlocks(new ArrayList<>());
 
         sapling.offer(
                 new CrazySaplingManipulatorBuilder().setTree(crazyTree.build()).create()

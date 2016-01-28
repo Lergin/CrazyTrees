@@ -230,6 +230,12 @@ public abstract class CrazyTree implements PopulatorObject, DataSerializable {
             return this;
         }
 
+        public Builder replaceBlocks(ArrayList<BlockState> replaceBlocks) {
+            this.replaceBlocks = replaceBlocks;
+
+            return this;
+        }
+
         /**
          * adds a BlockState on top of that the tree will be generated
          * @param groundBlock the Blockstate

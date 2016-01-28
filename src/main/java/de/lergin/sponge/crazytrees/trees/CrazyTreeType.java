@@ -47,6 +47,10 @@ public enum CrazyTreeType {
         return builder;
     }
 
+    public CrazyTree get(){
+        return builder.build();
+    }
+
     private static final List<CrazyTreeType> TREE_TYPES =
             Collections.unmodifiableList(Arrays.asList(values()));
     private static final Random RANDOM = new Random();

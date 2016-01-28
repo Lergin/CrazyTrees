@@ -2,8 +2,8 @@ package de.lergin.sponge.crazytrees.commands;
 
 import de.lergin.sponge.crazytrees.data.itemDrop.ItemDrop;
 import de.lergin.sponge.crazytrees.data.itemDrop.ItemDropDataManipulatorBuilder;
-import de.lergin.sponge.crazytrees.data.saplingData.CrazyTreeTypeData;
-import de.lergin.sponge.crazytrees.data.saplingData.SaplingData;
+import de.lergin.sponge.crazytrees.data.saplingData.CrazySaplingData;
+import de.lergin.sponge.crazytrees.data.saplingData.CrazySaplingManipulatorBuilder;
 import de.lergin.sponge.crazytrees.trees.CrazyTreeType;
 import org.spongepowered.api.block.BlockTypes;
 import org.spongepowered.api.command.CommandException;
@@ -35,16 +35,13 @@ public class TestDataAddCommand implements CommandExecutor {
         Optional<CrazyTreeType> integer = args.getOne("amount");
         if (target.isPresent()) {
             Player player = target.get();
-            player.offer(new SaplingData(BlockTypes.LOG.getDefaultState(), BlockTypes.LEAVES.getDefaultState()));
-            player.offer(new CrazyTreeTypeData(CrazyTreeType.DELNAS));
+            player.offer(new CrazySaplingManipulatorBuilder().setTree(CrazyTreeType.HEKUR.get()).create());
             player.offer(new ItemDropDataManipulatorBuilder().setItemDrop(new ItemDrop(itemStacks)).create());
         } else {
             if (src instanceof Player) {
                 Player player = (Player) src;
                 player.sendMessage(Text.of("WEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE"));
-                player.offer(new SaplingData( BlockTypes.LOG.getDefaultState(), BlockTypes.LEAVES.getDefaultState()));
-//                player.offer(new CrazyTreeTypeData(integer.get()));
-
+                player.offer(new CrazySaplingManipulatorBuilder().setTree(CrazyTreeType.HEKUR.get()).create());
                 player.offer(new ItemDropDataManipulatorBuilder().setItemDrop(new ItemDrop(itemStacks)).create());
             }
         }

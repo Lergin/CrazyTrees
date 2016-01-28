@@ -8,4 +8,5 @@ import static org.spongepowered.api.data.DataQuery.of;
  */
 public class DataQueries {
     public static final DataQuery ITEM_STACKS = of("itemStacks");
+    public static final DataQuery CRAZY_TREE = of("crazyTree");
 }

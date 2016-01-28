@@ -2,7 +2,7 @@ package de.lergin.sponge.crazytrees.commands;
 
 import de.lergin.sponge.crazytrees.data.CrazyTreeKeys;
 import de.lergin.sponge.crazytrees.data.itemDrop.ItemDropData;
-import de.lergin.sponge.crazytrees.data.saplingData.SaplingData;
+import de.lergin.sponge.crazytrees.data.saplingData.CrazySaplingData;
 import org.spongepowered.api.command.CommandException;
 import org.spongepowered.api.command.CommandResult;
 import org.spongepowered.api.command.CommandSource;
@@ -22,7 +22,7 @@ public class TestDataValidateCommand implements CommandExecutor {
         Optional<Player> target = args.getOne("player");
         if (target.isPresent()) {
             Player player = target.get();
-            Optional<SaplingData> optional = player.get(SaplingData.class);
+            Optional<CrazySaplingData> optional = player.get(CrazySaplingData.class);
             if (optional.isPresent()) {
                 src.sendMessage(Text.of("Data available!"));
                 System.out.println(optional.get().toString());
@@ -31,7 +31,7 @@ public class TestDataValidateCommand implements CommandExecutor {
             if (src instanceof Player) {
                 Player player = (Player) src;
                 Optional<ItemDropData> optional = player.get(ItemDropData.class);
-                Optional<SaplingData> optional2 = player.get(SaplingData.class);
+                Optional<CrazySaplingData> optional2 = player.get(CrazySaplingData.class);
                 if (optional.isPresent()) {
                     src.sendMessage(Text.of("Data available!"));
                     System.out.println(optional.get().get(CrazyTreeKeys.ITEM_DROP).toString());

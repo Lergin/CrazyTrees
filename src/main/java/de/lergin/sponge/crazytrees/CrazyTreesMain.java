@@ -42,7 +42,6 @@ import org.spongepowered.api.entity.living.player.Player;
 import org.spongepowered.api.event.Listener;
 import org.spongepowered.api.event.block.ChangeBlockEvent;
 import org.spongepowered.api.event.block.InteractBlockEvent;
-import org.spongepowered.api.event.cause.Cause;
 import org.spongepowered.api.event.game.state.GameConstructionEvent;
 import org.spongepowered.api.event.game.state.GameInitializationEvent;
 import org.spongepowered.api.event.game.state.GamePreInitializationEvent;
@@ -109,27 +108,26 @@ public class CrazyTreesMain {
 
         TranslationHelper.setLogLanguage(logLanguage);
         logger.info(TranslationHelper.l("translation.log.set", logLanguage.toLanguageTag()));
-
-
-
-        Sponge.getDataManager().register(SaplingData.class, ImmutableSaplingData.class,
-                new SaplingDataManipulatorBuilder());
-        Sponge.getDataManager().register(CrazyTreeTypeData.class, ImmutableCrazyTreeTypeData.class,
-                new CrazyTreeTypeDataManipulatorBuilder());
-
-        Sponge.getRegistry().getValueFactory().createValue(SaplingKeys.CRAZY_TREE_TYPE, CrazyTreeType.OAK);
     }
 
     @Listener
     public void onGameInitialization(GameInitializationEvent event) {
 
-        Sponge.getDataManager().register(ItemDropData.class, ImmutableItemDropData.class, new ItemDropDataManipulatorBuilder());
+        //init customData
+        Sponge.getDataManager().register(ItemDropData.class, ImmutableItemDropData.class,
+                new ItemDropDataManipulatorBuilder());
         Sponge.getDataManager().registerBuilder(ItemDrop.class, new ItemDropBuilder());
 
+        Sponge.getDataManager().register(CrazySaplingData.class, ImmutableCrazySaplingData.class,
+                new CrazySaplingManipulatorBuilder());
+        Sponge.getDataManager().registerBuilder(CrazySapling.class, new CrazySaplingBuilder());
 
 
+        //init worldGeneratorModifiers
         Sponge.getRegistry().register(CatalogTypes.WORLD_GENERATOR_MODIFIER, new CrazyForestGeneratorModifier());
 
+
+        //init commands
         Sponge.getCommandManager().register(
                 this,
                 CommandSpec.builder()
@@ -257,33 +255,7 @@ public class CrazyTreesMain {
 
                     ItemType itemType = itemStack.getItem();
 
-                    itemStack.offer(SaplingKeys.CRAZY_TREE_TYPE, CrazyTreeType.DELNAS);
-
-                    Optional<CrazyTreeType> optional = itemStack.get(SaplingKeys.CRAZY_TREE_TYPE);
-                    if (optional.isPresent()) {
-                        System.out.println(optional.get().toString());
-                    }
-
-                    System.out.println(itemStack.supports(SaplingKeys.CRAZY_TREE_LOG));
-
                     if(itemType == ItemTypes.NETHER_STAR){
-
-
-
-/*                        System.out.println(player.getLocation().getTileEntity().get().supports(SaplingKeys.CRAZY_TREE_TYPE));
-
-                       BlockState state = BlockTypes.SAPLING.getDefaultState();
-                        CrazyTreeTypeData data = new CrazyTreeTypeDataManipulatorBuilder().create();
-                        data.set(SaplingKeys.CRAZY_TREE_TYPE, CrazyTreeType.DELNAS);
-                        System.out.println(state.with(data.asImmutable()).toString());
-
-                        blockSnapshot.getLocation().get().setBlock(newState);
-
-                        Optional<CrazyTreeType> optional = blockSnapshot.getState().get(SaplingKeys.CRAZY_TREE_TYPE);
-                        if (optional.isPresent()) {
-                            System.out.println(optional.get().toString());
-                        }
-*/
                         crazyTreeBuilder = CrazyTreeType.random();
                     }
 

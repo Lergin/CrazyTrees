@@ -13,9 +13,7 @@ import org.spongepowered.api.command.CommandSource;
 import org.spongepowered.api.command.args.CommandContext;
 import org.spongepowered.api.command.spec.CommandExecutor;
 import org.spongepowered.api.data.key.Keys;
-import org.spongepowered.api.data.meta.ItemEnchantment;
 import org.spongepowered.api.entity.living.player.Player;
-import org.spongepowered.api.item.Enchantments;
 import org.spongepowered.api.item.ItemTypes;
 import org.spongepowered.api.item.inventory.ItemStack;
 import org.spongepowered.api.text.Text;
@@ -68,9 +66,6 @@ public class GetSaplingCommandExecutor implements CommandExecutor {
 
         CrazyTree crazyTree = crazyTreeBuilder.build();
 
-        System.out.println(crazyTree.getGroundBlocks());
-        System.out.println(crazyTree.getReplaceBlocks());
-
         sapling.offer(
                 new CrazySaplingManipulatorBuilder().setTree(crazyTree).create()
         );
@@ -78,20 +73,18 @@ public class GetSaplingCommandExecutor implements CommandExecutor {
         //only for the good locking
         sapling.offer(Keys.DISPLAY_NAME, Text.of(crazyTree.getName()));
 
-        ArrayList<ItemEnchantment> itemEnchantments = new ArrayList<>();
-     //   itemEnchantments.add(new ItemEnchantment(Enchantments.UNBREAKING, 0));
-        sapling.offer(Keys.ITEM_ENCHANTMENTS, itemEnchantments);
+        sapling.offer(Keys.ITEM_ENCHANTMENTS, new ArrayList<>());
 
         ArrayList<Text> loreTexts = new ArrayList<>();
         loreTexts.add(TranslationHelper.p(
                 player,
                 "player.info.wood_block",
-                crazyTree.getWoodBlock().getType().getTranslation().get(player.getLocale())
+                crazyTree.getWoodBlock().getType()
         ));
         loreTexts.add(TranslationHelper.p(
                 player,
                 "player.info.leave_block",
-                crazyTree.getLeaveBlock().getType().getTranslation().get(player.getLocale())
+                crazyTree.getLeaveBlock().getType()
         ));
         loreTexts.add(TranslationHelper.p(player, "player.info.height_block", crazyTree.getTreeHeightMax()));
         sapling.offer(Keys.ITEM_LORE, loreTexts);
@@ -111,54 +104,5 @@ public class GetSaplingCommandExecutor implements CommandExecutor {
         }
 
         return CommandResult.success();
-    }
-
-    private ItemStack getSapling(CommandContext args){
-        ItemStack sapling = ItemStack.of(ItemTypes.SAPLING, (int) args.getOne("amount").orElse(1));
-
-        CrazyTree.Builder crazyTreeBuilder = ((CrazyTreeType) args.getOne("treeType").orElse(CrazyTreeType.OAK)).getBuilder();
-
-        crazyTreeBuilder.woodBlock(
-                Sponge.getRegistry().getType(
-                        CatalogTypes.BLOCK_TYPE,
-                        (String) args.getOne("woodBlock").orElse(BlockTypes.LOG.getId())
-                ).get()
-        );
-
-        crazyTreeBuilder.leaveBlock(
-                Sponge.getRegistry().getType(
-                        CatalogTypes.BLOCK_TYPE,
-                        (String) args.getOne("leaveBlock").orElse(BlockTypes.LEAVES.getId())
-                ).get()
-        );
-
-        crazyTreeBuilder.treeHeight(
-                (Integer) args.getOne("height").orElse(crazyTreeBuilder.getTreeHeightMax()),
-                (Integer) args.getOne("height").orElse(crazyTreeBuilder.getTreeHeightMin())
-        );
-
-        crazyTreeBuilder.placeBlockUnderTree(false);
-        crazyTreeBuilder.replaceBlocks(new ArrayList<>());
-
-        CrazyTree crazyTree = crazyTreeBuilder.build();
-
-        sapling.offer(
-                new CrazySaplingManipulatorBuilder().setTree(crazyTree).create()
-        );
-
-        sapling.offer(Keys.DISPLAY_NAME, Text.of(crazyTree.getName()));
-
-        ArrayList<ItemEnchantment> itemEnchantments = new ArrayList<>();
-        itemEnchantments.add(new ItemEnchantment(Enchantments.UNBREAKING, 0));
-        sapling.offer(Keys.ITEM_ENCHANTMENTS, itemEnchantments);
-
-        ArrayList<Text> loreTexts = new ArrayList<>();
-        loreTexts.add(
-                Text.of("WoodBlock: " + crazyTree.getWoodBlock().toString()));
-        loreTexts.add(Text.of("LeaveBlock: " + crazyTree.getLeaveBlock().toString()));
-        loreTexts.add(Text.of("Height: " + crazyTree.getTreeHeightMax()));
-        sapling.offer(Keys.ITEM_LORE, loreTexts);
-
-        return sapling;
     }
 }

@@ -6,8 +6,10 @@ import org.slf4j.Logger;
 import org.spongepowered.api.entity.living.player.Player;
 import org.spongepowered.api.text.Text;
 import org.spongepowered.api.text.translation.ResourceBundleTranslation;
+import org.spongepowered.api.text.translation.Translatable;
 
 import javax.annotation.Nullable;
+import java.util.ArrayList;
 import java.util.Locale;
 import java.util.MissingFormatArgumentException;
 import java.util.ResourceBundle;
@@ -73,7 +75,18 @@ public final class TranslationHelper {
      */
     public static String s(Locale local, String key, Object... args) {
         try {
-            return new ResourceBundleTranslation(key, LOOKUP_FUNC).get(local, args);
+            ArrayList<Object> argsTranslated = new ArrayList<>();
+
+            for(Object arg: args){
+                if(arg instanceof Translatable){
+                    arg = ((Translatable) arg).getTranslation().get(local);
+                }
+
+                argsTranslated.add(arg);
+            }
+
+
+            return new ResourceBundleTranslation(key, LOOKUP_FUNC).get(local, argsTranslated.toArray());
         }catch(MissingFormatArgumentException e){
             // we need to check if the message is our error message so we are not creating a endless loop
             if(key.equals("warn.translation.too_many_arguments")){

@@ -108,7 +108,12 @@ public final class TranslationHelper {
      * @return the translated text
      */
     public static Text p(Player player, String key, Object... args){
-        return t(player.getLocale(), key, args);
+        if(ConfigHelper.getNode("translation", "usePlayerLanguage").getBoolean()){
+            return t(player.getLocale(), key, args);
+        }else{
+            return t(key, args);
+        }
+
     }
 
     /**

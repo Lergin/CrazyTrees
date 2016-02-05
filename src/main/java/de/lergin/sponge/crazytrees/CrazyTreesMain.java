@@ -46,7 +46,6 @@ public class CrazyTreesMain {
         return logger;
     }
 
-
     private static CrazyTreesMain instance;
 
     public static CrazyTreesMain instance() {
@@ -158,8 +157,12 @@ public class CrazyTreesMain {
                                                         GenericArguments.integer(Text.of("amount"))
                                                 )
                                         ),
-                                        GenericArguments.optional(GenericArguments.string(Text.of("woodBlock"))),
-                                        GenericArguments.optional(GenericArguments.string(Text.of("leaveBlock"))),
+                                        GenericArguments.optional(GenericArguments.catalogedElement(
+                                                Text.of("woodBlock"), CatalogTypes.BLOCK_TYPE)
+                                        ),
+                                        GenericArguments.optional(GenericArguments.catalogedElement(
+                                                Text.of("leaveBlock"), CatalogTypes.BLOCK_TYPE)
+                                        ),
                                         GenericArguments.optional(
                                                 GenericArguments.onlyOne(
                                                         GenericArguments.integer(Text.of("height"))

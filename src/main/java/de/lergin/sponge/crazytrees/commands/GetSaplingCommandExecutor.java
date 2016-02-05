@@ -3,10 +3,12 @@ package de.lergin.sponge.crazytrees.commands;
 import de.lergin.sponge.crazytrees.data.saplingData.CrazySaplingManipulatorBuilder;
 import de.lergin.sponge.crazytrees.trees.CrazyTree;
 import de.lergin.sponge.crazytrees.trees.CrazyTreeType;
+import de.lergin.sponge.crazytrees.util.ConfigHelper;
 import de.lergin.sponge.crazytrees.util.TranslationHelper;
+import ninja.leaping.configurate.ConfigurationNode;
 import org.spongepowered.api.CatalogTypes;
 import org.spongepowered.api.Sponge;
-import org.spongepowered.api.block.BlockTypes;
+import org.spongepowered.api.block.BlockType;
 import org.spongepowered.api.command.CommandException;
 import org.spongepowered.api.command.CommandResult;
 import org.spongepowered.api.command.CommandSource;
@@ -39,20 +41,31 @@ public class GetSaplingCommandExecutor implements CommandExecutor {
         //create the Data from  the arguments
         ItemStack sapling = ItemStack.of(ItemTypes.SAPLING, (int) args.getOne("amount").orElse(1));
 
-        CrazyTree.Builder crazyTreeBuilder = ((CrazyTreeType) args.getOne("treeType").orElse(CrazyTreeType.OAK)).getBuilder();
+
+        ConfigurationNode saplingConfig = ConfigHelper.getNode("sapling", "default");
+        ConfigurationNode treeTypeConfig = ConfigHelper.getNode("defaultTree");
+
+        CrazyTree.Builder crazyTreeBuilder =
+                ((CrazyTreeType) args.getOne("treeType").orElse(
+                        CrazyTreeType.valueOf(treeTypeConfig.getNode("treeType").getString("OAK"))
+                )).getBuilder();
 
         crazyTreeBuilder.woodBlock(
-                Sponge.getRegistry().getType(
-                        CatalogTypes.BLOCK_TYPE,
-                        (String) args.getOne("woodBlock").orElse(BlockTypes.LOG.getId())
-                ).get()
+                (BlockType) args.getOne("woodBlock").orElse(
+                        Sponge.getRegistry().getType(
+                                CatalogTypes.BLOCK_TYPE,
+                                treeTypeConfig.getNode("woodBlock").getString("minecraft:log")
+                        ).get()
+                )
         );
 
         crazyTreeBuilder.leaveBlock(
-                Sponge.getRegistry().getType(
-                        CatalogTypes.BLOCK_TYPE,
-                        (String) args.getOne("leaveBlock").orElse(BlockTypes.LEAVES.getId())
-                ).get()
+                (BlockType) args.getOne("leaveBlock").orElse(
+                        Sponge.getRegistry().getType(
+                                CatalogTypes.BLOCK_TYPE,
+                                treeTypeConfig.getNode("leaveBlock").getString("minecraft:leaves")
+                        ).get()
+                )
         );
 
         crazyTreeBuilder.treeHeight(
@@ -71,22 +84,38 @@ public class GetSaplingCommandExecutor implements CommandExecutor {
         );
 
         //only for the good locking
-        sapling.offer(Keys.DISPLAY_NAME, Text.of(crazyTree.getName()));
+        if(saplingConfig.getNode("treeTypeAsName").getBoolean(true)){
+            sapling.offer(Keys.DISPLAY_NAME, TranslationHelper.p(
+                    player,
+                    "treeType." + crazyTree.getClass().getSimpleName()
+            ));
+        }
 
-        sapling.offer(Keys.ITEM_ENCHANTMENTS, new ArrayList<>());
+        if(saplingConfig.getNode("enchanted").getBoolean(true))
+            sapling.offer(Keys.ITEM_ENCHANTMENTS, new ArrayList<>());
+
 
         ArrayList<Text> loreTexts = new ArrayList<>();
-        loreTexts.add(TranslationHelper.p(
-                player,
-                "player.info.wood_block",
-                crazyTree.getWoodBlock().getType()
-        ));
-        loreTexts.add(TranslationHelper.p(
-                player,
-                "player.info.leave_block",
-                crazyTree.getLeaveBlock().getType()
-        ));
-        loreTexts.add(TranslationHelper.p(player, "player.info.height_block", crazyTree.getTreeHeightMax()));
+        if(saplingConfig.getNode("lore", "woodBlock").getBoolean(true)){
+            loreTexts.add(TranslationHelper.p(
+                    player,
+                    "player.info.wood_block",
+                    crazyTree.getWoodBlock().getType()
+            ));
+        }
+
+        if(saplingConfig.getNode("lore", "leaveBlock").getBoolean(true)){
+            loreTexts.add(TranslationHelper.p(
+                    player,
+                    "player.info.leave_block",
+                    crazyTree.getLeaveBlock().getType()
+            ));
+        }
+
+        if(saplingConfig.getNode("lore", "height").getBoolean(true))
+            loreTexts.add(TranslationHelper.p(player, "player.info.height_block", crazyTree.getTreeHeightMax()));
+
+
         sapling.offer(Keys.ITEM_LORE, loreTexts);
 
 

@@ -10,6 +10,7 @@ import org.slf4j.Logger;
 
 import java.io.IOException;
 import java.net.URL;
+import java.util.Locale;
 
 /**
  * Class for working with the configuration
@@ -30,12 +31,12 @@ public final class ConfigHelper {
             rootNode = loader.load();
 
             if(rootNode.getChildrenList().isEmpty()){
-                logger.warn(TranslationHelper.l("warn.config.no_config_or_empty"));
+                logger.warn(TranslationHelper.l("warn.config.no_config_or_empty", Locale.ENGLISH));
 
                 loadDefaultConfig();
             }
         } catch(IOException e) {
-            logger.warn(TranslationHelper.l("warn.config.could_not_load"));
+            logger.warn(TranslationHelper.l("warn.config.could_not_load", Locale.ENGLISH));
 
             loadDefaultConfig();
         }

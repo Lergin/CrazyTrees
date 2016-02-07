@@ -13,7 +13,10 @@ import org.spongepowered.api.command.CommandException;
 import org.spongepowered.api.command.CommandResult;
 import org.spongepowered.api.command.CommandSource;
 import org.spongepowered.api.command.args.CommandContext;
+import org.spongepowered.api.command.args.CommandElement;
+import org.spongepowered.api.command.args.GenericArguments;
 import org.spongepowered.api.command.spec.CommandExecutor;
+import org.spongepowered.api.command.spec.CommandSpec;
 import org.spongepowered.api.data.key.Keys;
 import org.spongepowered.api.entity.living.player.Player;
 import org.spongepowered.api.item.ItemTypes;
@@ -28,7 +31,7 @@ public class GetSaplingCommandExecutor implements CommandExecutor {
     public CommandResult execute(CommandSource src, CommandContext args) throws CommandException {
         Player player;
 
-        Optional<Player> target = args.getOne("player");
+        Optional<Player> target = args.getOne("target");
         if (target.isPresent()) {
             player = target.get();
         } else if (src instanceof Player) {
@@ -85,10 +88,13 @@ public class GetSaplingCommandExecutor implements CommandExecutor {
 
         //only for the good locking
         if(saplingConfig.getNode("treeTypeAsName").getBoolean(true)){
-            sapling.offer(Keys.DISPLAY_NAME, TranslationHelper.p(
-                    player,
-                    "treeType." + crazyTree.getClass().getSimpleName()
-            ));
+            sapling.offer(
+                    Keys.DISPLAY_NAME,
+                        TranslationHelper.p(
+                                player,
+                                "treeType." + crazyTree.getClass().getSimpleName() + ".sapling"
+                        )
+            );
         }
 
         if(saplingConfig.getNode("enchanted").getBoolean(true))
@@ -133,5 +139,86 @@ public class GetSaplingCommandExecutor implements CommandExecutor {
         }
 
         return CommandResult.success();
+    }
+
+
+    private final static ConfigurationNode configNode = ConfigHelper.getNode("commands", "getSapling");
+
+    public static CommandSpec getCommandSpec(){
+        CommandSpec.Builder builder = CommandSpec.builder();
+
+        builder.description(Text.of(configNode.getNode("description").getString()));
+
+        builder.executor(new GetSaplingCommandExecutor());
+
+        final String permission = configNode.getNode("permission").getString();
+
+        if(!"".equals(permission)){
+            builder.permission(permission);
+        }
+
+        CommandElement[] commandElements = new CommandElement[5];
+
+        commandElements[0] = getCommandElementWithPermission(
+                "treeType",
+                GenericArguments.optional(
+                        GenericArguments.onlyOne(
+                                GenericArguments.enumValue(getArgName("treeType"), CrazyTreeType.class)
+                        )
+                )
+        );
+
+        commandElements[1] = getCommandElementWithPermission(
+                "amount",
+                GenericArguments.optional(
+                        GenericArguments.onlyOne(
+                                GenericArguments.integer(getArgName("amount"))
+                        )
+                )
+        );
+
+        commandElements[2] = getCommandElementWithPermission(
+                "woodBlock",
+                GenericArguments.optional(
+                        GenericArguments.catalogedElement(getArgName("woodBlock"), CatalogTypes.BLOCK_TYPE)
+                )
+        );
+
+        commandElements[3] = getCommandElementWithPermission(
+                "leaveBlock",
+                GenericArguments.optional(
+                        GenericArguments.catalogedElement(getArgName("leaveBlock"), CatalogTypes.BLOCK_TYPE)
+                )
+        );
+
+        commandElements[4] = getCommandElementWithPermission(
+                "height",
+                GenericArguments.optional(
+                        GenericArguments.onlyOne(GenericArguments.integer(getArgName("height")))
+                )
+        );
+
+
+
+        builder.arguments(commandElements);
+
+        return builder.build();
+    }
+
+    private static CommandElement getCommandElementWithPermission(String id, CommandElement commandElement){
+        final String permission = configNode.getNode("params", id, "permission").getString();
+
+        if(permission.equals("")){
+            return commandElement;
+        }else{
+            return GenericArguments.requiringPermission(
+                            commandElement,
+                            permission
+                    );
+        }
+    }
+
+    private static Text getArgName(String id){
+        return Text.of(configNode.getNode("params", id, "name").getString());
     }
 }

@@ -1,43 +1,32 @@
 package de.lergin.sponge.crazytrees;
 
-import static org.spongepowered.api.command.args.GenericArguments.onlyOne;
-import static org.spongepowered.api.command.args.GenericArguments.playerOrSource;
-import static org.spongepowered.api.command.args.GenericArguments.seq;
-import static org.spongepowered.api.command.args.GenericArguments.world;
-
 import com.google.inject.Inject;
 import de.lergin.sponge.crazytrees.commands.*;
 import de.lergin.sponge.crazytrees.data.itemDrop.*;
 import de.lergin.sponge.crazytrees.listener.SaplingPlaceListener;
 import de.lergin.sponge.crazytrees.trees.CrazyTree;
-import de.lergin.sponge.crazytrees.trees.CrazyTreeType;
 import de.lergin.sponge.crazytrees.data.saplingData.*;
 import de.lergin.sponge.crazytrees.trees.vanilla.oak.OakTree;
 import de.lergin.sponge.crazytrees.util.ConfigHelper;
 import de.lergin.sponge.crazytrees.util.TranslationHelper;
+import ninja.leaping.configurate.commented.CommentedConfigurationNode;
+import ninja.leaping.configurate.loader.ConfigurationLoader;
 import org.slf4j.Logger;
-import org.spongepowered.api.CatalogTypes;
 import org.spongepowered.api.Sponge;
-import org.spongepowered.api.command.args.GenericArguments;
-import org.spongepowered.api.command.spec.CommandSpec;
-import org.spongepowered.api.config.ConfigDir;
+import org.spongepowered.api.config.DefaultConfig;
 import org.spongepowered.api.event.Listener;
-import org.spongepowered.api.event.game.state.GameConstructionEvent;
-import org.spongepowered.api.event.game.state.GameInitializationEvent;
-import org.spongepowered.api.event.game.state.GamePreInitializationEvent;
-import org.spongepowered.api.event.game.state.GameStoppingEvent;
+import org.spongepowered.api.event.game.state.*;
 import org.spongepowered.api.plugin.Plugin;
-import org.spongepowered.api.text.Text;
 
-import java.nio.file.Path;
 import java.util.*;
 
 
-@Plugin(id = "crazyTrees", name = "Crazy Trees", version = "0.1")
+@Plugin(id = "crazyTrees", name = "Crazy Trees", version = "1.0")
 public class CrazyTreesMain {
     @Inject
-    @ConfigDir(sharedRoot = false)
-    public Path confDir;
+    @DefaultConfig(sharedRoot = true)
+    public ConfigurationLoader<CommentedConfigurationNode> configManager;
+
 
     @Inject
     private Logger logger;
@@ -95,7 +84,7 @@ public class CrazyTreesMain {
 
 
         //init worldGeneratorModifiers
-        Sponge.getRegistry().register(CatalogTypes.WORLD_GENERATOR_MODIFIER, new CrazyForestGeneratorModifier());
+        //Sponge.getRegistry().register(CatalogTypes.WORLD_GENERATOR_MODIFIER, new CrazyForestGeneratorModifier());
 
 
         //init eventListener
@@ -105,79 +94,13 @@ public class CrazyTreesMain {
         //init commands
         Sponge.getCommandManager().register(
                 this,
-                CommandSpec.builder()
-                        .description(Text.of("Validates data"))
-                        .arguments(GenericArguments.optional(GenericArguments.onlyOne(GenericArguments.player(Text.of("player")))))
-                        .executor(new TestDataValidateCommand())
-                        .build(),
-                "validateData");
-
-        Sponge.getCommandManager().register(
-                this,
-                CommandSpec.builder()
-                        .description(Text.of("Validates data"))
-                        .arguments(GenericArguments.optional(GenericArguments.onlyOne(GenericArguments.player(Text.of("player")))))
-                        .executor(new TestDataAddCommand())
-                        .build(),
-                "addData"
-        );
-
-        Sponge.getCommandManager().register(
-                this,
-                CommandSpec.builder()
-                        .description(Text.of("just a test command"))
-                        .executor(new TestCommand())
-                        .build(),
-                "test"
-        );
-
-        Sponge.getCommandManager().register(
-                this,
-                CommandSpec.builder()
-                        .description(Text.of("Teleports a player to another world"))
-                        .arguments(seq(playerOrSource(Text.of("target")), onlyOne(world(Text.of("world")))))
-                        .permission("worldstest.command.tpworld")
-                        .executor(new TestTpWorld())
-                        .build(),
-                "tpworld"
-        );
-
-        Sponge.getCommandManager().register(
-                this,
-                CommandSpec.builder()
-                        .description(Text.of("Teleports a player to another world"))
-                        .arguments(
-                                seq(
-                                        playerOrSource(Text.of("target")),
-                                        GenericArguments.onlyOne(
-                                                GenericArguments.enumValue(Text.of("treeType"), CrazyTreeType.class)
-                                        ),
-                                        GenericArguments.optional(
-                                                GenericArguments.onlyOne(
-                                                        GenericArguments.integer(Text.of("amount"))
-                                                )
-                                        ),
-                                        GenericArguments.optional(GenericArguments.catalogedElement(
-                                                Text.of("woodBlock"), CatalogTypes.BLOCK_TYPE)
-                                        ),
-                                        GenericArguments.optional(GenericArguments.catalogedElement(
-                                                Text.of("leaveBlock"), CatalogTypes.BLOCK_TYPE)
-                                        ),
-                                        GenericArguments.optional(
-                                                GenericArguments.onlyOne(
-                                                        GenericArguments.integer(Text.of("height"))
-                                                )
-                                        )
-                                )
-                        )
-                        .permission("worldstest.command.tpworld")
-                        .executor(new GetSaplingCommandExecutor())
-                        .build(),
-                "crazySapling"
+                GetSaplingCommandExecutor.getCommandSpec(),
+                ConfigHelper.getNode("commands", "getSapling", "command").getString("getSapling")
         );
     }
 
-    @Listener void onGameStopping(GameStoppingEvent event){
+    @Listener
+    public void onGameGameStoppedEvent(GameStoppedEvent event){
         ConfigHelper.saveConfig();
     }
 }

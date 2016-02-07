@@ -28,8 +28,9 @@ public enum CrazyTreeType {
     KIPARIS(new KiparisTree.Builder().treeHeight(17,5)),
     KULIST(new KulistTree.Builder().treeHeight(11,6)),
     KULIST_LARGE(new KulistTreeLarge.Builder().treeHeight(18,9)),
-    LATA(new LataTree.Builder().treeHeight(21,15)),
-    NUCIS(new NucisTree.Builder().treeHeight(23,15)),
+    // server isn't reacting when placing this trees...
+    // LATA(new LataTree.Builder().treeHeight(21,15)),
+    //NUCIS(new NucisTree.Builder().treeHeight(23,15)),
     SALYX(new SalyxTree.Builder().treeHeight(1,1)),
     TUOPA(new TuopaTree.Builder().treeHeight(4,1)),
 

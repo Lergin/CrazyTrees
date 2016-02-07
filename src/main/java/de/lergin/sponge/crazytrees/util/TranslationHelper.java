@@ -117,6 +117,22 @@ public final class TranslationHelper {
     }
 
     /**
+     * returns the translation of the key (as string) in the language of the player
+     * @param player player that's language should be used
+     * @param key resourceBundle key
+     * @param args replace arguments
+     * @return the translated string
+     */
+    public static String ps(Player player, String key, Object... args){
+        if(ConfigHelper.getNode("translation", "usePlayerLanguage").getBoolean()){
+            return s(player.getLocale(), key, args);
+        }else{
+            return s(key, args);
+        }
+
+    }
+
+    /**
      * returns the translation of the key in the log language
      * @param key resourceBundle key
      * @param args replace arguments

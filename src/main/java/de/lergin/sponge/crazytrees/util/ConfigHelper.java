@@ -7,6 +7,7 @@ import ninja.leaping.configurate.commented.CommentedConfigurationNode;
 import ninja.leaping.configurate.hocon.HoconConfigurationLoader;
 import ninja.leaping.configurate.loader.ConfigurationLoader;
 import org.slf4j.Logger;
+import org.spongepowered.api.text.Text;
 
 import java.io.IOException;
 import java.net.URL;
@@ -16,8 +17,12 @@ import java.util.Locale;
  * Class for working with the configuration
  */
 public final class ConfigHelper {
-    private static final ConfigurationLoader<CommentedConfigurationNode> loader =
+/*    private static final ConfigurationLoader<CommentedConfigurationNode> loader =
             HoconConfigurationLoader.builder().setPath(CrazyTreesMain.instance().confDir).build();
+*/
+
+    private static final ConfigurationLoader<CommentedConfigurationNode> loader =
+            CrazyTreesMain.instance().configManager;
 
     private static final Logger logger = CrazyTreesMain.instance().getLogger();
 
@@ -29,29 +34,17 @@ public final class ConfigHelper {
     public static void loadConfig(){
         try {
             rootNode = loader.load();
-
-            if(rootNode.getChildrenList().isEmpty()){
-                logger.warn(TranslationHelper.l("warn.config.no_config_or_empty", Locale.ENGLISH));
-
-                loadDefaultConfig();
-            }
         } catch(IOException e) {
-            logger.warn(TranslationHelper.l("warn.config.could_not_load", Locale.ENGLISH));
-
-            loadDefaultConfig();
+            logger.warn(TranslationHelper.l("warn.config.could_not_load"));
         }
-    }
 
-    /**
-     * loads the default config form the jar
-     */
-    private static void loadDefaultConfig(){
+
         final URL jarConfigFile = ConfigHelper.class.getResource("defaultConfig.conf");
-        final ConfigurationLoader<CommentedConfigurationNode> loader =
+        final ConfigurationLoader<CommentedConfigurationNode> defaultLoader =
                 HoconConfigurationLoader.builder().setURL(jarConfigFile).build();
 
         try {
-            rootNode = loader.load();
+            rootNode.mergeValuesFrom(defaultLoader.load());
         } catch (IOException e1) {
             logger.error(TranslationHelper.l("error.config.could_not_load_default"));
         }
@@ -63,6 +56,7 @@ public final class ConfigHelper {
     public static void saveConfig(){
         try {
             loader.save(rootNode);
+            logger.info(TranslationHelper.l("info.config.saved"));
         } catch(IOException e) {
             logger.warn(TranslationHelper.l("warn.config.could_not_save"));
         }
@@ -76,5 +70,4 @@ public final class ConfigHelper {
     public static ConfigurationNode getNode(Object... objects){
         return rootNode.getNode(objects);
     }
-
 }
